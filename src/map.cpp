@@ -40,7 +40,8 @@ Map::~Map(){
 void Map::blit(){
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
-            this->tiles[i][j]->blit();
+            this->tiles[i][j]->blit(big_map);
         }
     }
+    s->blit_screen(big_map, NULL);
 }

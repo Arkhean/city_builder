@@ -4,8 +4,8 @@
 
 Texture *textures[TEX_NUM];
 
-Sprite::Sprite(int texture_number, Map *m)
-    : texture_number(texture_number), m(m) {
+Sprite::Sprite(int texture_number, Screen *s)
+    : texture_number(texture_number), s(s) {
     this->pos.x = 0;
     this->pos.y = 0;
     this->pos.w = textures[this->texture_number]->get_width();
@@ -17,8 +17,8 @@ void Sprite::move(int x, int y){
     this->pos.y = y + 30 - this->pos.h;
 }
 
-void Sprite::blit(){
-    this->m->blit(textures[this->texture_number], &this->pos);
+void Sprite::blit(Texture *target){
+    target->blit_texture(s, textures[this->texture_number], &this->pos);
 }
 
 /******************************************************************/
