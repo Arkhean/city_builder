@@ -45,10 +45,9 @@ class Screen{
     public :
         int get_width();
         int get_height();
-        TTF_Font * police = NULL;
         Screen(int width=MIN_WIDTH, int height=MIN_HEIGHT);
-        Screen(Screen const &); // TODO
-        Screen& operator=(Screen const &); //TODO
+        Screen(Screen const &);
+        Screen& operator=(Screen const &);
         ~Screen();
         void clear();
         SDL_Renderer * get_rend();

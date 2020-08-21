@@ -5,15 +5,23 @@
 #include "screen.hpp"
 #include "math.h"
 
+TTF_Font * police = NULL;
+
 void init_SDL_TTF(){
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) == -1){
         printf("SDL_Init: %s\n", SDL_GetError());
         exit(1);
     }
     TTF_Init();
+    police = TTF_OpenFont("./data/DejaVuSans.ttf", 20);
+    if (police == NULL){
+        std::cout << "erreur openFont\n";
+        exit(1);
+    }
 }
 
 void quit_SDL_TTF(){
+    TTF_CloseFont(police);
     TTF_Quit();
     SDL_Quit();
 }
@@ -37,10 +45,6 @@ Screen::Screen(int width, int height){
     SDL_SetRenderTarget(this->rend, this->frame);
     SDL_RenderClear(this->rend);
     SDL_SetRenderTarget(this->rend, NULL);
-    this->police = TTF_OpenFont("DejaVuSans.ttf", 20);
-    if (this->police == NULL){
-        std::cout << "erreur chargement police\n";
-    }
 }
 
 void Screen::clear(){
@@ -51,11 +55,18 @@ void Screen::clear(){
     SDL_SetRenderTarget(this->rend, NULL);
 }
 
+Screen::Screen(Screen const &){
+    // TODO
+}
+
+Screen& Screen::operator=(Screen const &){
+    // TODO
+}
+
 Screen::~Screen(){
     SDL_DestroyTexture(this->frame);
     SDL_DestroyRenderer(this->rend);
     SDL_DestroyWindow(this->ecran);
-    TTF_CloseFont(this->police);
     delete this->cadre;
 }
 
@@ -116,7 +127,7 @@ Texture::Texture(std::string str, Screen * s, SDL_Color color){
         if (this->text == NULL){std::cout << "error converting" << std::endl;}
     }
     else if (str.length() > 0){
-        this->surface = TTF_RenderText_Blended(s->police, str.c_str(), color);
+        this->surface = TTF_RenderText_Blended(police, str.c_str(), color);
         this->text = SDL_CreateTextureFromSurface(s->get_rend(), this->surface);
         initRect(this->cadre, 0, 0, surface->w, surface->h);
     }
