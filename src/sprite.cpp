@@ -4,36 +4,41 @@
 
 Texture *textures[TEX_NUM];
 
-Sprite::Sprite(int texture_number, Screen *s)
-    : texture_number(texture_number), s(s) {
+Sprite::Sprite(int texture_number, Map *m)
+    : texture_number(texture_number), m(m) {
     this->pos.x = 0;
     this->pos.y = 0;
     this->pos.w = textures[this->texture_number]->get_width();
     this->pos.h = textures[this->texture_number]->get_height();
 }
 
+void Sprite::move(int x, int y){
+    this->pos.x = x;
+    this->pos.y = y + 30 - this->pos.h;
+}
+
 void Sprite::blit(){
-    this->s->blit_screen(textures[this->texture_number], &this->pos);
+    this->m->blit(textures[this->texture_number], &this->pos);
 }
 
 /******************************************************************/
 
 void load_all_textures(Screen *s){
-    char path[] = "data/lands/land_001";
+    char path[] = "data/lands/land_001.png";
     for(int i = 0; i < TEX_NUM; i++){
         // changer le numéro de fin, padding...
         int n = i + 1;
         if (n < 10){
-            path[7] = '0' + n;
+            path[18] = '0' + n;
         }
         else if (n < 10){
-            path[6] = '0' + (n / 10);
-            path[7] = '0' + (n % 10);
+            path[17] = '0' + (n / 10);
+            path[18] = '0' + (n % 10);
         }
         else {
-            path[5] = '0' + (n / 100);
-            path[6] = '0' + (n / 10);
-            path[7] = '0' + (n % 10);
+            path[16] = '0' + (n / 100);
+            path[17] = '0' + ((n / 10) % 10);
+            path[18] = '0' + (n % 10);
         }
         textures[i] = new Texture(path, s);
         if (textures[i] == NULL){

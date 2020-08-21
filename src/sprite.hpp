@@ -8,14 +8,10 @@ class Sprite {
     private:
         int texture_number;
         SDL_Rect pos;
-        Screen *s;
     public:
-        Sprite(int texture_number, Screen * s);
-        void move(int x, int y){
-            this->pos.x = x;
-            this->pos.y = y;
-        }
-        void blit();
+        Sprite(int texture_number);
+        void move(int x, int y);
+        void blit(Texture *target);
 };
 
 void load_all_textures(Screen *s);

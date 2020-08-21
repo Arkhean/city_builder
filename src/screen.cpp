@@ -115,6 +115,13 @@ void Screen::draw_circle(int cx, int cy, int radius, SDL_Color color){
 }
 
 // =============================================================================
+Texture::Texture(Screen * s, int width, int height){
+    this->surface = NULL;
+    this->cadre = new SDL_Rect;
+    this->text = SDL_CreateTexture(s->get_rend(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
+    initRect(this->cadre, 0, 0, width, height);
+}
+
 Texture::Texture(std::string str, Screen * s, SDL_Color color){
     this->text = NULL;
     this->surface = NULL;
@@ -189,6 +196,12 @@ void Texture::set_pixel(Screen *s, int x, int y, Uint32 color){
 void Texture::update(Screen *s){
     SDL_DestroyTexture(this->text);
     this->text = SDL_CreateTextureFromSurface(s->get_rend(), this->surface);
+}
+
+void Texture::blit_texture(Screen *s, Texture * t, SDL_Rect * where){
+    SDL_SetRenderTarget(s->get_rend(), this->text);
+    SDL_RenderCopy(s->get_rend(), t->text, NULL, where);
+    SDL_SetRenderTarget(s->get_rend(), NULL);
 }
 
 

@@ -22,6 +22,7 @@ class Texture{
         SDL_Texture * text;
         int get_width();
         int get_height();
+        Texture(Screen * s, int witdh, int height);
         Texture(std::string str, Screen * s, SDL_Color color={255,255,255,255});
         Texture(Texture const &); // TODO
         Texture& operator=(Texture const &); //TODO
@@ -31,6 +32,7 @@ class Texture{
         void set_pixel(Screen *s, int x, int y, SDL_Color color);
         void set_pixel(Screen *s, int x, int y, Uint32 color);
         void update(Screen *s);
+        void blit_texture(Screen *s, Texture * t, SDL_Rect * where=NULL);
         SDL_PixelFormat * get_format(){return this->surface->format;}
 };
 
