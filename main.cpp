@@ -45,15 +45,15 @@ bool interactions(SDL_Event event, bool &attendre, Map *m, Screen *s){
             break;
         case SDL_MOUSEBUTTONDOWN :
             //on a cliqué
-            //int n = m->get_n(event.button.x+m->get_dx(), event.button.y+m->get_dy());
-            //int id = m->get_region(event.button.x+m->get_dx(), event.button.y+m->get_dy());
-            //std::cout << "x = " << event.button.x+m->get_dx() << " y = " << event.button.y+m->get_dy() << " id = " << id << std::endl;
+            int i, j;
+            localiser(event.button.x+m->get_dx(), event.button.y+m->get_dy(), &i, &j);
+            std::cout << "i = " << i << " j = " << j << " n = " << m->tiles[i][j]->get_num() << std::endl;
             break;
     }
     return false;
 }
 
-char tiles[MAP_SIZE][MAP_SIZE] = {0};
+int tiles[MAP_SIZE][MAP_SIZE] = {0};
 
 int main(int argc, char * argv[]){
     /* initialisation */
@@ -67,7 +67,7 @@ int main(int argc, char * argv[]){
             tiles[i][j] = rand() % 4;
         }
     }
-    m.load_tiles(&s, tiles);
+    m.load_tiles(tiles);
     m.blit();
     s.update();
 

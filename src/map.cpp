@@ -3,14 +3,14 @@
 
 #include "map.hpp"
 
-void convertir(int i, int j, int *x, int *y, int w){  // de matrice vers écran
-	w = w/2-29;
+void convertir(int i, int j, int *x, int *y){  // de matrice vers écran
+    int w = MAP_SIZE*TILE_WIDTH/2 - 29;
     *x = w-(i-j)*29;
     *y = (i+j)*15;
 }
 
-void localiser(int x, int y, int *i, int *j, int w){	// écran vers matrice
-	w = w/2;
+void localiser(int x, int y, int *i, int *j){	// écran vers matrice
+    int w = MAP_SIZE*TILE_WIDTH/2;
     *i = (29*y-15*x+15*w)/870;
     *j = (29*y+15*x-15*w)/870;
 }
@@ -64,7 +64,7 @@ Map::Map(Screen *s): s(s), visible_area({0,0,1600,900}){
             int r = grassland_rand_number();
             this->tiles[i][j] = new Sprite(r, s);
             int x,y;
-            convertir(i, j, &x, &y, MAP_SIZE*TILE_WIDTH);
+            convertir(i, j, &x, &y);
             this->tiles[i][j]->move(x, y);
         }
     }
@@ -100,36 +100,81 @@ void Map::translate(int dx, int dy){
     }
 }
 
+int Map::get_water_tile(int i, int j){
+    int res[] = {199, 199, 167, 167, 199, 199, 167, 167, 164, 164,				//0
+				198, 198, 164, 164, 156, 156, 199, 199, 167, 167,				//1
+				199, 199, 167, 167, 164, 164, 198, 198, 164, 164,					//2
+				156+(rand()%4), 156+(rand()%4), 165, 165, 160+(rand()%2), 160+(rand()%2), 165, 165, 160+(rand()%2), 160+(rand()%2),		//3
+				195, 195, 185, 185, 195, 195, 184, 184, 165, 165,					//4
+				160+(rand()%2), 160+(rand()%2), 165, 160+(rand()%2), 160+(rand()%2), 160+(rand()%2), 144+(rand()%4), 144+(rand()%4), 183, 183,		//5
+				144+(rand()%4), 144+(rand()%4), 128+(rand()%4), 128+(rand()%4), 199, 199, 167, 167, 199, 199,		//6
+				167, -1, -1, -1, -1, -1, -1, -1, -1, -1,					//7
+				199, 199, 167, -1, 199, 199, 167, 167, -1, -1,					//8
+				-1, -1, -1, -1, -1, -1, 165, -1, 160+(rand()%2), 160+(rand()%2),		//9
+				-1, -1, 160+(rand()%2), -1, 195, -1, -1, -1, 195, -1,				//10
+				-1, -1, 165, -1, 160+(rand()%2), -1, -1, -1, 160+(rand()%2), 160+(rand()%2),				//11
+				144+(rand()%4), -1, 165, -1, 144+(rand()%4), 128+(rand()%4), 128+(rand()%4), 128+(rand()%4), 166, 166,	//12
+				197, 152+(rand()%4), 166, 166, 197, 152+(rand()%4), 162+(rand()%2), 162+(rand()%2), 194, 193,			//13
+				162+(rand()%2), 162+(rand()%2), 166, 140+(rand()%4), 197, 166, 197, 152+(rand()%4), -1, -1,			//14
+				-1, -1, 162+(rand()%2), 162+(rand()%2), 194, -1, 162+(rand()%2), 162+(rand()%2), 192, 140+(rand()%4),	//15
+				196, 196, -1, -1, 196, -1, 191, 189, -1, 188,			//16
+				-1, -1, 188, -1, -1, 176, 196, 196, -1, -1,			// 17
+				-1, -1, -1, -1, -1, -1, -1, 169, 187, -1,			//18
+				177, 173, 166, 166, 197, 152+(rand()%4), 166, -1, 197, 152+(rand()%4),	//19
+				162+(rand()%2), 162+(rand()%2), -1, -1, 162+(rand()%2), -1, -1, 140+(rand()%4), -1, -1,		//20
+				-1, -1, -1, -1, 197, 197, 162+(rand()%2), 162+(rand()%2), -1, -1,				//21
+				-1, -1, 168, 140+(rand()%4), 148+(rand()%4), 148+(rand()%4), -1, 136+(rand()%4), -1, -1,	//22
+				190, 136+(rand()%4), 186, 175, 178, 175, 132+(rand()%4), -1, -1, 172,
+				148+(rand()%4), 148+(rand()%4), 190, 136+(rand()%4), -1, -1, -1, 136+(rand()%4), 132+(rand()%4), 132+(rand()%4),
+				-1, 171, 132+(rand()%4), 132+(rand()%4), 170, -1};
+    int r = 0, d = 1;
+    int di[] = {1,0,-1,-1,-1,0,1,1};
+    int dj[] = {-1,-1,-1,0,1,1,1,0};
+	for(int k = 0; k < 8; k++){
+        if (i+di[k] < MAP_SIZE && i+di[k] >= 0 && j+dj[k] < MAP_SIZE && j+dj[k] >= 0){
+            r += (d * (this->num[i+di[k]][j+dj[k]] == WATER));
+            d *= 2;
+        }
+		else{
+			return 255;
+		}
+    }
+    return res[r]-1;
+}
 
-// 0 -> grass
-// 1 -> forest
-// 2 -> water
-// 3 -> rock
-int determine_sprite(int n, int i, int j, Map *m){
+int Map::determine_sprite(int n, int i, int j){
+    int r;
     switch (n) {
-        case 0:
+        case GRASS:
             return grassland_rand_number();
-        case 1:
+        case TREE:
             return tree_rand_number();
-        case 2:
-            // 46 possibilités
-            return water_rand_number();
-        case 3:
+        case WATER:
+            r = this->get_water_tile(i, j);
+            if (r < 0){
+                return water_rand_number();
+            }
+            return r;
+        case ROCK:
             return rock_rand_number();
         default:
             return grassland_rand_number();
     }
-
 }
 
-void Map::load_tiles(Screen *s, char num[MAP_SIZE][MAP_SIZE]){
+void Map::load_tiles(int new_num[MAP_SIZE][MAP_SIZE]){
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
-            int r = determine_sprite(num[i][j], i, j, this);
+            this->num[i][j] = new_num[i][j];
+        }
+    }
+    for(int i = 0; i < MAP_SIZE; i++){
+        for(int j = 0; j < MAP_SIZE; j++){
+            int r = this->determine_sprite(this->num[i][j], i, j);
             delete this->tiles[i][j];
             this->tiles[i][j] = new Sprite(r, s);
             int x,y;
-            convertir(i, j, &x, &y, MAP_SIZE*TILE_WIDTH);
+            convertir(i, j, &x, &y);
             this->tiles[i][j]->move(x, y);
         }
     }
@@ -141,7 +186,7 @@ int Map::save(std::string path){
     if (myfile.is_open()){
         for(int i = 0; i < MAP_SIZE; i++){
             for(int j = 0; j < MAP_SIZE; j++){
-                myfile << this->tiles[i][j]->get_num();
+                myfile << this->num[i][j];
             }
             myfile << "\n";
         }
@@ -159,16 +204,12 @@ int Map::load(std::string path){
     big_map->clear(this->s);
     std::string line;
     std::ifstream myfile (path);
+    int new_num[MAP_SIZE][MAP_SIZE] = {0};
     if (myfile.is_open()){
         for(int i = 0; i < MAP_SIZE; i++){
             if ( getline (myfile, line) ){
                 for(int j = 0; j < MAP_SIZE; j++){
-                    int r = determine_sprite(line[j] - '0', i, j, this);
-                    delete this->tiles[i][j];
-                    this->tiles[i][j] = new Sprite(r, s);
-                    int x,y;
-                    convertir(i, j, &x, &y, MAP_SIZE*TILE_WIDTH);
-                    this->tiles[i][j]->move(x, y);
+                    new_num[i][j] = line[j] - '0';
                 }
             }
             else{
@@ -177,6 +218,7 @@ int Map::load(std::string path){
             }
         }
         myfile.close();
+        this->load_tiles(new_num);
     }
     else{
         std::cout << "Unable to open file\n";
