@@ -196,6 +196,12 @@ void Texture::blit_texture(Screen *s, Texture * t, SDL_Rect * where){
     SDL_SetRenderTarget(s->get_rend(), NULL);
 }
 
+void Texture::clear(Screen *s){
+    SDL_SetRenderDrawColor(s->get_rend(), 0, 0, 0, 255);
+    SDL_SetRenderTarget(s->get_rend(), this->text);
+    SDL_RenderClear(s->get_rend());
+    SDL_SetRenderTarget(s->get_rend(), NULL);
+}
 
 // =============================================================================
 Button::Button(std::string str, Screen *s) : Texture(str, s){}

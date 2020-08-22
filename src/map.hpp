@@ -4,7 +4,7 @@
 #include "screen.hpp"
 #include "sprite.hpp"
 
-#define MAP_SIZE 32
+#define MAP_SIZE 16
 #define TILE_WIDTH 58
 #define TILE_HEIGHT 30
 
@@ -22,6 +22,8 @@ class Map {
         ~Map();
         void translate(int dx, int dy);
         void load_tiles(Screen *s, char num[MAP_SIZE][MAP_SIZE]);
+        int save(std::string path);
+        int load(std::string path);
 };
 
 #endif

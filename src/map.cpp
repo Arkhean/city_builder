@@ -1,3 +1,6 @@
+#include <iostream>
+#include <fstream>
+
 #include "map.hpp"
 
 void convertir(int i, int j, int *x, int *y, int w){  // de matrice vers écran
@@ -109,6 +112,7 @@ int determine_sprite(int n, int i, int j, Map *m){
         case 1:
             return tree_rand_number();
         case 2:
+            // 46 possibilités
             return water_rand_number();
         case 3:
             return rock_rand_number();
@@ -122,10 +126,61 @@ void Map::load_tiles(Screen *s, char num[MAP_SIZE][MAP_SIZE]){
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
             int r = determine_sprite(num[i][j], i, j, this);
+            delete this->tiles[i][j];
             this->tiles[i][j] = new Sprite(r, s);
             int x,y;
             convertir(i, j, &x, &y, MAP_SIZE*TILE_WIDTH);
             this->tiles[i][j]->move(x, y);
         }
     }
+}
+
+int Map::save(std::string path){
+    std::cout << "saving to " << path << std::endl;
+    std::ofstream myfile (path);
+    if (myfile.is_open()){
+        for(int i = 0; i < MAP_SIZE; i++){
+            for(int j = 0; j < MAP_SIZE; j++){
+                myfile << this->tiles[i][j]->get_num();
+            }
+            myfile << "\n";
+        }
+        myfile.close();
+    }
+    else{
+        std::cout << "Unable to open file\n";
+        return 1;
+    }
+    return 0;
+}
+
+int Map::load(std::string path){
+    std::cout << "loading from " << path << std::endl;
+    big_map->clear(this->s);
+    std::string line;
+    std::ifstream myfile (path);
+    if (myfile.is_open()){
+        for(int i = 0; i < MAP_SIZE; i++){
+            if ( getline (myfile, line) ){
+                for(int j = 0; j < MAP_SIZE; j++){
+                    int r = determine_sprite(line[j] - '0', i, j, this);
+                    delete this->tiles[i][j];
+                    this->tiles[i][j] = new Sprite(r, s);
+                    int x,y;
+                    convertir(i, j, &x, &y, MAP_SIZE*TILE_WIDTH);
+                    this->tiles[i][j]->move(x, y);
+                }
+            }
+            else{
+                std::cout << "Error in file\n";
+                return 1;
+            }
+        }
+        myfile.close();
+    }
+    else{
+        std::cout << "Unable to open file\n";
+        return 1;
+    }
+    return 0;
 }

@@ -5,7 +5,7 @@
 #include "src/map.hpp"
 #include "src/screen.hpp"
 
-bool interactions(SDL_Event event, bool &attendre, Map *m){
+bool interactions(SDL_Event event, bool &attendre, Map *m, Screen *s){
     const Uint8 *state;
     int d = 50;
     switch (event.type){
@@ -28,6 +28,15 @@ bool interactions(SDL_Event event, bool &attendre, Map *m){
             }
             if (state[SDL_SCANCODE_DOWN]){
                 m->translate(0, d);
+            }
+            if (state[SDL_SCANCODE_S]){
+                m->save("saves/save1.map");
+            }
+            if (state[SDL_SCANCODE_L]){
+                m->load("saves/save1.map");
+            }
+            if (state[SDL_SCANCODE_C]){
+                s->clear();
             }
             return true;
             break;
@@ -53,6 +62,11 @@ int main(int argc, char * argv[]){
     load_all_textures(&s);
 
     Map m(&s);
+    for(int i = 0; i < MAP_SIZE; i++){
+        for(int j = 0; j < MAP_SIZE; j++){
+            tiles[i][j] = rand() % 4;
+        }
+    }
     m.load_tiles(&s, tiles);
     m.blit();
     s.update();
@@ -65,7 +79,7 @@ int main(int argc, char * argv[]){
         SDL_Delay(50);
 
         while(SDL_PollEvent(&event)){
-            draw = interactions(event, attendre, &m) || draw;
+            draw = interactions(event, attendre, &m, &s) || draw;
         }
         if (draw){
             m.blit();

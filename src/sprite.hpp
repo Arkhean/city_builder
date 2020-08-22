@@ -10,6 +10,7 @@ class Sprite {
         SDL_Rect pos;
         Screen *s;
     public:
+        int get_num(){ return texture_number; }
         Sprite(int texture_number, Screen *s);
         void move(int x, int y);
         void blit(Texture *target);
