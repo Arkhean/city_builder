@@ -13,10 +13,12 @@ class Map {
         Sprite *tiles[MAP_SIZE][MAP_SIZE];
         Texture *big_map;
         Screen *s;
+        SDL_Rect visible_area;
     public:
         Map(Screen *s); // require load_all_textures
         void blit();
         ~Map();
+        void translate(int dx, int dy);
 };
 
 #endif

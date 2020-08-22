@@ -55,14 +55,6 @@ void Screen::clear(){
     SDL_SetRenderTarget(this->rend, NULL);
 }
 
-Screen::Screen(Screen const &){
-    // TODO
-}
-
-Screen& Screen::operator=(Screen const &){
-    // TODO
-}
-
 Screen::~Screen(){
     SDL_DestroyTexture(this->frame);
     SDL_DestroyRenderer(this->rend);

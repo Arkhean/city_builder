@@ -24,8 +24,8 @@ class Texture{
         int get_height();
         Texture(Screen * s, int witdh, int height);
         Texture(std::string str, Screen * s, SDL_Color color={255,255,255,255});
-        Texture(Texture const &); // TODO
-        Texture& operator=(Texture const &); //TODO
+        Texture(Texture const &) = delete;
+        Texture& operator=(Texture const &) = delete;
         ~Texture();
         SDL_Rect * get_cadre();
         Uint32 get_pixel(int x, int y);
@@ -48,8 +48,8 @@ class Screen{
         int get_width();
         int get_height();
         Screen(int width=MIN_WIDTH, int height=MIN_HEIGHT);
-        Screen(Screen const &);
-        Screen& operator=(Screen const &);
+        Screen(Screen const &) = delete;
+        Screen& operator=(Screen const &) = delete;
         ~Screen();
         void clear();
         SDL_Renderer * get_rend();

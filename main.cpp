@@ -5,31 +5,30 @@
 #include "src/map.hpp"
 #include "src/screen.hpp"
 
-bool interactions(SDL_Event event, bool &attendre){
-    //const Uint8 *state;
-    //int d = 50;
+bool interactions(SDL_Event event, bool &attendre, Map *m){
+    const Uint8 *state;
+    int d = 50;
     switch (event.type){
         case SDL_QUIT :
             attendre = false;
             break;
         case SDL_KEYDOWN :
-            /*state = SDL_GetKeyboardState(NULL);
+            state = SDL_GetKeyboardState(NULL);
             if (state[SDL_SCANCODE_ESCAPE]){
                 attendre = false;
             }
             if (state[SDL_SCANCODE_UP]){
-                m->translater(0, -d);
+                m->translate(0, -d);
             }
             if (state[SDL_SCANCODE_RIGHT]){
-                m->translater(d, 0);
+                m->translate(d, 0);
             }
             if (state[SDL_SCANCODE_LEFT]){
-                m->translater(-d, 0);
+                m->translate(-d, 0);
             }
             if (state[SDL_SCANCODE_DOWN]){
-                m->translater(0, d);
+                m->translate(0, d);
             }
-            m->blit_map();*/
             return true;
             break;
         case SDL_MOUSEMOTION :
@@ -64,9 +63,10 @@ int main(int argc, char * argv[]){
         SDL_Delay(50);
 
         while(SDL_PollEvent(&event)){
-            draw = interactions(event, attendre) || draw;
+            draw = interactions(event, attendre, &m) || draw;
         }
         if (draw){
+            m.blit();
             s.update();
             draw = false;
         }
