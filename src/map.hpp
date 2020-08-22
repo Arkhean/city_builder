@@ -16,9 +16,12 @@ class Map {
         SDL_Rect visible_area;
     public:
         Map(Screen *s); // require load_all_textures
+        Map(Map const &) = delete;
+        Map& operator=(Map const &) = delete;
         void blit();
         ~Map();
         void translate(int dx, int dy);
+        void load_tiles(Screen *s, char num[MAP_SIZE][MAP_SIZE]);
 };
 
 #endif

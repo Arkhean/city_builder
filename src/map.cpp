@@ -96,3 +96,36 @@ void Map::translate(int dx, int dy){
         visible_area.y = 0;
     }
 }
+
+
+// 0 -> grass
+// 1 -> forest
+// 2 -> water
+// 3 -> rock
+int determine_sprite(int n, int i, int j, Map *m){
+    switch (n) {
+        case 0:
+            return grassland_rand_number();
+        case 1:
+            return tree_rand_number();
+        case 2:
+            return water_rand_number();
+        case 3:
+            return rock_rand_number();
+        default:
+            return grassland_rand_number();
+    }
+
+}
+
+void Map::load_tiles(Screen *s, char num[MAP_SIZE][MAP_SIZE]){
+    for(int i = 0; i < MAP_SIZE; i++){
+        for(int j = 0; j < MAP_SIZE; j++){
+            int r = determine_sprite(num[i][j], i, j, this);
+            this->tiles[i][j] = new Sprite(r, s);
+            int x,y;
+            convertir(i, j, &x, &y, MAP_SIZE*TILE_WIDTH);
+            this->tiles[i][j]->move(x, y);
+        }
+    }
+}

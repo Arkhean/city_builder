@@ -44,6 +44,7 @@ bool interactions(SDL_Event event, bool &attendre, Map *m){
     return false;
 }
 
+char tiles[MAP_SIZE][MAP_SIZE] = {0};
 
 int main(int argc, char * argv[]){
     /* initialisation */
@@ -52,6 +53,7 @@ int main(int argc, char * argv[]){
     load_all_textures(&s);
 
     Map m(&s);
+    m.load_tiles(&s, tiles);
     m.blit();
     s.update();
 
