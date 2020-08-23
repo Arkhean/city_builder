@@ -1,9 +1,22 @@
-# work in progress :)
-CFLAGS= -g -O0
+CC = g++
+CFLAGS = -Wall -g -O0
+EXEC_NAME = main
+LIBS = -lSDL2 -lSDL2_image -lSDL2_ttf
+OBJ_FILES = $(BUILD_DIR)/main.o $(BUILD_DIR)/map.o $(BUILD_DIR)/screen.o $(BUILD_DIR)/sprite.o
+INSTALL_DIR = install/
+BUILD_DIR = build
+SRC_DIR = src
 
-all:
-	g++ ${CFLAGS} -c src/map.cpp -o build/map.o
-	g++ ${CFLAGS} -c src/screen.cpp -o build/screen.o
-	g++ ${CFLAGS} -c src/sprite.cpp -o build/sprite.o
-	g++ ${CFLAGS} -c main.cpp -o build/main.o
-	g++ ${CFLAGS} -o main build/*.o -lSDL2 -lSDL2_image -lSDL2_ttf
+all : $(EXEC_NAME)
+
+clean :
+	rm $(EXEC_NAME) $(OBJ_FILES)
+
+$(EXEC_NAME) : $(OBJ_FILES)
+	$(CC) -o $(EXEC_NAME) $(OBJ_FILES) $(LIBS)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+install :
+	cp $(EXEC_NAME) $(INSTALL_DIR)

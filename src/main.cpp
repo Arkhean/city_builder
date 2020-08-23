@@ -1,9 +1,9 @@
 #include <unistd.h>
 #include <SDL2/SDL.h>
 
-#include "src/sprite.hpp"
-#include "src/map.hpp"
-#include "src/screen.hpp"
+#include "sprite.hpp"
+#include "map.hpp"
+#include "screen.hpp"
 
 bool interactions(SDL_Event event, bool &attendre, Map *m, Screen *s){
     const Uint8 *state;

@@ -4,7 +4,7 @@
 #include "screen.hpp"
 #include "sprite.hpp"
 
-#define MAP_SIZE 32
+#define MAP_SIZE 64
 #define TILE_WIDTH 58
 #define TILE_HEIGHT 30
 enum land_types { GRASS, TREE, WATER, ROCK };

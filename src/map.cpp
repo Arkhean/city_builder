@@ -228,15 +228,34 @@ void Map::randomize(){
     int tiles[MAP_SIZE][MAP_SIZE] = { GRASS };
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
-            int r = rand() % 100;
+            int r = rand() % (MAP_SIZE*10);
             if (r < 1){
                 tiles[i][j] = WATER;
             }
             else if (r < 2){
                 tiles[i][j] = ROCK;
             }
-            else if (r < 15){
+            else if (r < (MAP_SIZE)){
                 tiles[i][j] = TREE;
+            }
+        }
+    }
+    int proba[] = {0, 15, 4, 6};
+    int di[] = {1,0,-1,0};
+    int dj[] = {0,-1,0,1};
+    for(int n = 0; n < 10; n++){
+        for(int i = 1; i < MAP_SIZE-1; i++){
+            for(int j = 1; j < MAP_SIZE-1; j++){
+                if (tiles[i][j] != GRASS){
+                    for(int k = 0; k < 4; k++){
+                        if (i+di[k] < MAP_SIZE && i+di[k] >= 0
+                            && j+dj[k] < MAP_SIZE && j+dj[k] >= 0){
+                            if ((rand()%proba[tiles[i][j]]) == 0){
+                                tiles[i+di[k]][j+dj[k]] = tiles[i][j];
+                            }
+                        }
+                    }
+                }
             }
         }
     }
