@@ -38,6 +38,9 @@ bool interactions(SDL_Event event, bool &attendre, Map *m, Screen *s){
             if (state[SDL_SCANCODE_C]){
                 s->clear();
             }
+            if (state[SDL_SCANCODE_R]){
+                m->randomize();
+            }
             return true;
             break;
         case SDL_MOUSEMOTION :
@@ -47,13 +50,11 @@ bool interactions(SDL_Event event, bool &attendre, Map *m, Screen *s){
             //on a cliqué
             int i, j;
             localiser(event.button.x+m->get_dx(), event.button.y+m->get_dy(), &i, &j);
-            std::cout << "i = " << i << " j = " << j << " n = " << m->tiles[i][j]->get_num() << std::endl;
+            std::cout << "i = " << i << " j = " << j << " n = " << std::endl;
             break;
     }
     return false;
 }
-
-int tiles[MAP_SIZE][MAP_SIZE] = {0};
 
 int main(int argc, char * argv[]){
     /* initialisation */
@@ -62,12 +63,7 @@ int main(int argc, char * argv[]){
     load_all_textures(&s);
 
     Map m(&s);
-    for(int i = 0; i < MAP_SIZE; i++){
-        for(int j = 0; j < MAP_SIZE; j++){
-            tiles[i][j] = rand() % 4;
-        }
-    }
-    m.load_tiles(tiles);
+    m.randomize();
     m.blit();
     s.update();
 
