@@ -1,11 +1,9 @@
 #include "sprite.hpp"
 
-#define TEX_NUM 421
+Texture *textures[LAND_TEXTURES+BUILDING_NUMBER];
 
-Texture *textures[TEX_NUM];
-
-Sprite::Sprite(int texture_number, Screen *s)
-    : texture_number(texture_number), s(s) {
+Sprite::Sprite(int texture_number)
+    : texture_number(texture_number) {
     this->pos.x = 0;
     this->pos.y = 0;
     this->pos.w = textures[this->texture_number]->get_width();
@@ -18,14 +16,15 @@ void Sprite::move(int x, int y){
 }
 
 void Sprite::blit(Texture *target){
-    target->blit(s, textures[this->texture_number], &this->pos);
+    target->blit(textures[this->texture_number], &this->pos);
 }
 
 /******************************************************************/
 
 void load_all_textures(Screen *s){
+    /* lands */
     char path[] = "data/lands/land_001.png";
-    for(int i = 0; i < TEX_NUM; i++){
+    for(int i = 0; i < LAND_TEXTURES; i++){
         // changer le numéro de fin, padding...
         int n = i + 1;
         if (n < 10){
@@ -40,8 +39,30 @@ void load_all_textures(Screen *s){
             path[17] = '0' + ((n / 10) % 10);
             path[18] = '0' + (n % 10);
         }
-        textures[i] = new Texture(path, s);
+        textures[i] = new Texture(s, path);
         if (textures[i] == NULL){
+            std::cout << "error texture load\n";
+            exit(1);
+        }
+    }
+    /* buildings */
+    char path2[] = "data/buildings/building_001.png";
+    for(int i = 0; i < BUILDING_NUMBER; i++){
+        int n = i + 1;
+        if (n < 10){
+            path2[26] = '0' + n;
+        }
+        else if (n < 10){
+            path2[25] = '0' + (n / 10);
+            path2[26] = '0' + (n % 10);
+        }
+        else {
+            path2[24] = '0' + (n / 100);
+            path2[25] = '0' + ((n / 10) % 10);
+            path2[26] = '0' + (n % 10);
+        }
+        textures[LAND_TEXTURES+i] = new Texture(s, path2);
+        if (textures[LAND_TEXTURES+i] == NULL){
             std::cout << "error texture load\n";
             exit(1);
         }

@@ -1,0 +1,122 @@
+######################
+##### ressources #####
+######################
+
+* viandes
+* poissons
+* blé
+* fruits
+* légumes
+* raisins -> vin
+* olives -> huile
+* fer -> armes
+* bois -> meubles
+* argile -> poterie
+
+###################################
+##### bâtiments de production #####
+###################################
+
+* ferme (+ champs)
+* pêcherie
+* mines de fer
+* puits d'argile
+* cabane de bûcherons
+* atelier d'armes
+* atelier d'huile
+* atelier de vin
+* atelier de meubles
+* atelier de poterie
+
+* entrepôt
+
+#################################
+##### bâtiments de services #####
+#################################
+
+* puits
+* fontaine
+* marché
+* temple
+* école
+* médecin
+* théâtre
+* colisée
+* université
+* barbier
+* hôpital
+
+#######################
+##### habitations #####
+#######################
+
+** hutte **
+10 fermiers
+requiert:
+- 1 type de nourriture
+- marché
+- puits
+- accès temple
+
+** taudis **
+20 artisans
+requiert:
+- 2 types de nourriture
+- marché
+- puits
+- poterie
+- accès temple
+- accès école
+- accès médecin
+
+** maison **
+30 citoyens
+requiert:
+- 3 types de nourriture
+- marché
+- fontaine
+- poterie
+- meubles
+- accès temple
+- accès école
+- accès médecin
+- accès théâtre
+- accès université
+- accès barbier
+
+** insulae **
+50 citoyens
+requiert:
+- 4 types de nourriture
+- marché
+- fontaine
+- poterie
+- meubles
+- huile
+- accès temple
+- accès école
+- accès médecin
+- accès théâtre
+- accès université
+- accès barbier
+- accès colisée
+- accès hôpital
+
+** villa **
+20 patriciens
+requiert:
+- 5 types de nourriture
+- marché
+- fontaine
+- poterie
+- meubles
+- huile
+- vin
+- accès temple
+- accès école
+- accès médecin
+- accès théâtre
+- accès université
+- accès barbier
+- accès colisée
+- accès hôpital

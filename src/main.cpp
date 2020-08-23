@@ -35,7 +35,7 @@ int main(int argc, char * argv[]){
         SDL_Delay(50);
 
         while(SDL_PollEvent(&event)){
-            draw = interactions(event, attendre, &m, &menu, &s) || draw;
+            draw = interactions(event, attendre, &m, &menu) || draw;
         }
         if (draw){
             m.blit();

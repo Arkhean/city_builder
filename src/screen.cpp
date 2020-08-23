@@ -107,14 +107,16 @@ void Screen::draw_circle(int cx, int cy, int radius, SDL_Color color){
 }
 
 // =============================================================================
-Texture::Texture(Screen * s, int width, int height){
+Texture::Texture(Screen *s, int width, int height){
+    this->s = s;
     this->surface = NULL;
     this->cadre = new SDL_Rect;
     this->text = SDL_CreateTexture(s->get_rend(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
     initRect(this->cadre, 0, 0, width, height);
 }
 
-Texture::Texture(std::string str, Screen * s, SDL_Color color){
+Texture::Texture(Screen * s, std::string str, SDL_Color color){
+    this->s = s;
     this->text = NULL;
     this->surface = NULL;
     this->cadre = new SDL_Rect;
@@ -172,7 +174,7 @@ Uint32 Texture::get_pixel(int x, int y){
     }
 }
 
-void Texture::set_pixel(Screen *s, int x, int y, SDL_Color color){
+void Texture::set_pixel(int x, int y, SDL_Color color){
     Uint32 *pixels = (Uint32*)this->surface->pixels; /* Nos pixels sont sur 32 bits */
     Uint32 couleur = SDL_MapRGBA(surface->format, color.r, color.g, color.b, color.a);
     pixels[y * surface->w + x] = couleur;
@@ -180,23 +182,23 @@ void Texture::set_pixel(Screen *s, int x, int y, SDL_Color color){
     this->text = SDL_CreateTextureFromSurface(s->get_rend(), this->surface);
 }
 
-void Texture::set_pixel(Screen *s, int x, int y, Uint32 color){
+void Texture::set_pixel(int x, int y, Uint32 color){
     Uint32 *pixels = (Uint32*)this->surface->pixels; /* Nos pixels sont sur 32 bits */
     pixels[y * surface->w + x] = color;
 }
 
-void Texture::update(Screen *s){
+void Texture::update(){
     SDL_DestroyTexture(this->text);
     this->text = SDL_CreateTextureFromSurface(s->get_rend(), this->surface);
 }
 
-void Texture::blit(Screen *s, Texture * t, SDL_Rect * where){
+void Texture::blit(Texture * t, SDL_Rect * where){
     SDL_SetRenderTarget(s->get_rend(), this->text);
     SDL_RenderCopy(s->get_rend(), t->text, NULL, where);
     SDL_SetRenderTarget(s->get_rend(), NULL);
 }
 
-void Texture::clear(Screen *s, bool transparency){
+void Texture::clear(bool transparency){
     if (transparency){
         SDL_SetTextureBlendMode(this->text, SDL_BLENDMODE_BLEND);
     }
@@ -207,7 +209,7 @@ void Texture::clear(Screen *s, bool transparency){
 }
 
 // =============================================================================
-Button::Button(std::string str, Screen *s) : Texture(str, s){}
+Button::Button(Screen *s, std::string str) : Texture(s, str){}
 
 bool Button::is_click(int x, int y){
     return x >= cadre->x && x <= cadre->x+cadre->w && y >= cadre->y && y <= cadre->y+cadre->h;

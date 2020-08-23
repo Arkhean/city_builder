@@ -62,7 +62,7 @@ Map::Map(Screen *s): s(s), visible_area({0,0,1600,900}){
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
             int r = grassland_rand_number();
-            this->tiles[i][j] = new Sprite(r, s);
+            this->tiles[i][j] = new Sprite(r);
             int x,y;
             convertir(i, j, &x, &y);
             this->tiles[i][j]->move(x, y);
@@ -75,13 +75,17 @@ Map::~Map(){
 }
 
 void Map::blit(){
-    big_map->clear(this->s);
+    big_map->clear();
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
             this->tiles[i][j]->blit(big_map);
         }
     }
     s->blit_screen(big_map, NULL, &visible_area);
+}
+
+void Map::blit_on_map(Sprite *sprite){
+    sprite->blit(big_map);
 }
 
 void Map::translate(int dx, int dy){
@@ -170,7 +174,7 @@ void Map::load_tiles(int new_num[MAP_SIZE][MAP_SIZE]){
         for(int j = 0; j < MAP_SIZE; j++){
             int r = this->determine_sprite(this->num[i][j], i, j);
             delete this->tiles[i][j];
-            this->tiles[i][j] = new Sprite(r, s);
+            this->tiles[i][j] = new Sprite(r);
             int x,y;
             convertir(i, j, &x, &y);
             this->tiles[i][j]->move(x, y);

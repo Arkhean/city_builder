@@ -23,6 +23,7 @@ class Map {
         Map(Map const &) = delete;
         Map& operator=(Map const &) = delete;
         void blit();
+        void blit_on_map(Sprite *sprite);
         ~Map();
         int get_dx(){return this->visible_area.x;}
         int get_dy(){return this->visible_area.y;}
@@ -34,5 +35,6 @@ class Map {
 };
 
 void localiser(int x, int y, int *i, int *j);
+void convertir(int i, int j, int *x, int *y);
 
 #endif

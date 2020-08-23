@@ -18,22 +18,23 @@ class Texture{
     protected :
         SDL_Rect * cadre;
         SDL_Surface * surface;
+        Screen *s; // pour mémoire
     public :
         SDL_Texture * text;
         int get_width();
         int get_height();
-        Texture(Screen * s, int witdh, int height);
-        Texture(std::string str, Screen * s, SDL_Color color={255,255,255,255});
+        Texture(Screen *s, int witdh, int height);
+        Texture(Screen *s, std::string str, SDL_Color color={255,255,255,255});
         Texture(Texture const &) = delete;
         Texture& operator=(Texture const &) = delete;
         ~Texture();
         SDL_Rect * get_cadre();
         Uint32 get_pixel(int x, int y);
-        void set_pixel(Screen *s, int x, int y, SDL_Color color);
-        void set_pixel(Screen *s, int x, int y, Uint32 color);
-        void update(Screen *s);
-        void clear(Screen *s, bool transparency=false);
-        void blit(Screen *s, Texture * t, SDL_Rect * where=NULL);
+        void set_pixel(int x, int y, SDL_Color color);
+        void set_pixel(int x, int y, Uint32 color);
+        void update();
+        void clear(bool transparency=false);
+        void blit(Texture * t, SDL_Rect * where=NULL);
         SDL_PixelFormat * get_format(){return this->surface->format;}
 };
 
@@ -67,7 +68,7 @@ class Button : public Texture{
     private :
 
     public :
-        Button(std::string str, Screen *s);
+        Button(Screen *s, std::string str);
         bool is_click(int x, int y);
 };
 
