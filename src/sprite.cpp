@@ -10,9 +10,9 @@ Sprite::Sprite(int texture_number)
     this->pos.h = textures[this->texture_number]->get_height();
 }
 
-void Sprite::move(int x, int y){
-    this->pos.x = x;
-    this->pos.y = y + 30 - this->pos.h;
+void Sprite::move(int x, int y, int size){
+    this->pos.x = x + 58+(size-1)*29 - this->pos.w;
+    this->pos.y = y + 30*size - this->pos.h;
 }
 
 void Sprite::blit(Texture *target){

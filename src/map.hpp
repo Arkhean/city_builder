@@ -4,7 +4,7 @@
 #include "screen.hpp"
 #include "sprite.hpp"
 
-#define MAP_SIZE 64
+#define MAP_SIZE 32
 #define TILE_WIDTH 58
 #define TILE_HEIGHT 30
 enum land_types { GRASS, TREE, WATER, ROCK };
@@ -22,7 +22,8 @@ class Map {
         Map(Screen *s); // require load_all_textures
         Map(Map const &) = delete;
         Map& operator=(Map const &) = delete;
-        void blit();
+        void update();
+        void blit_to_screen();
         void blit_on_map(Sprite *sprite);
         ~Map();
         int get_dx(){return this->visible_area.x;}

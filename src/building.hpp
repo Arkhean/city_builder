@@ -21,7 +21,7 @@ class Building {
         Sprite *sprite;
     public:
         Building(int type, int i, int j);
-        void blit(Map *m);
+        void blit(Map *m); // TODO: add to map
 };
 
 /* habitations */

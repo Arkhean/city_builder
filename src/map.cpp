@@ -5,7 +5,7 @@
 
 void convertir(int i, int j, int *x, int *y){  // de matrice vers écran
     int w = MAP_SIZE*TILE_WIDTH/2 - 29;
-    *x = w-(i-j)*29;
+    *x = w-(i-j)*29 - i + MAP_SIZE;
     *y = (i+j)*15;
 }
 
@@ -74,18 +74,21 @@ Map::~Map(){
     delete this->big_map;
 }
 
-void Map::blit(){
+void Map::update(){
     big_map->clear();
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
             this->tiles[i][j]->blit(big_map);
         }
     }
-    s->blit_screen(big_map, NULL, &visible_area);
 }
 
 void Map::blit_on_map(Sprite *sprite){
     sprite->blit(big_map);
+}
+
+void Map::blit_to_screen(){
+    s->blit_screen(big_map, NULL, &visible_area);
 }
 
 void Map::translate(int dx, int dy){

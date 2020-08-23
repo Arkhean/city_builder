@@ -14,7 +14,7 @@ class Sprite {
     public:
         int get_num(){ return texture_number; }
         Sprite(int texture_number);
-        void move(int x, int y);
+        void move(int x, int y, int size=1);
         void blit(Texture *target);
 };
 

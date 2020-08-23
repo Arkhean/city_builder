@@ -1,8 +1,10 @@
 #include <unistd.h>
+#include <list>
 #include <SDL2/SDL.h>
 
 #include "sprite.hpp"
 #include "map.hpp"
+#include "building.hpp"
 #include "screen.hpp"
 #include "menu.hpp"
 #include "interactions.hpp"
@@ -17,14 +19,21 @@ int main(int argc, char * argv[]){
 
     /* map */
     Map m(&s);
-    m.randomize();
-    m.blit();
+    //m.randomize();
+    m.update();
+
+    /* buildings */
+    std::list<Building*> buildings;
+    Building * b = new Building(MARKET, 0, 0);
+    buildings.push_back(b);
+    for(Building *b : buildings){ b->blit(&m); }
 
     /* menu */
     Menu menu(&s);
     menu.blit();
 
     /* all on screen */
+    m.blit_to_screen();
     s.update();
 
     SDL_Event event;
@@ -38,7 +47,8 @@ int main(int argc, char * argv[]){
             draw = interactions(event, attendre, &m, &menu) || draw;
         }
         if (draw){
-            m.blit();
+            m.blit_to_screen();
+            for(Building *b : buildings){ b->blit(&m); }
             menu.blit();
             s.update();
             draw = false;

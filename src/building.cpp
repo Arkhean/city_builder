@@ -26,7 +26,7 @@ Building::Building(int type, int i, int j)
     this->sprite = new Sprite(LAND_TEXTURES+type);
     int x, y;
     convertir(i, j, &x, &y);
-    this->sprite->move(x, y);
+    this->sprite->move(x, y, building_size(type));
 }
 
 void Building::blit(Map *m){
