@@ -18,7 +18,7 @@ void Sprite::move(int x, int y){
 }
 
 void Sprite::blit(Texture *target){
-    target->blit_texture(s, textures[this->texture_number], &this->pos);
+    target->blit(s, textures[this->texture_number], &this->pos);
 }
 
 /******************************************************************/

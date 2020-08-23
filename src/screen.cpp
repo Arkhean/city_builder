@@ -190,14 +190,17 @@ void Texture::update(Screen *s){
     this->text = SDL_CreateTextureFromSurface(s->get_rend(), this->surface);
 }
 
-void Texture::blit_texture(Screen *s, Texture * t, SDL_Rect * where){
+void Texture::blit(Screen *s, Texture * t, SDL_Rect * where){
     SDL_SetRenderTarget(s->get_rend(), this->text);
     SDL_RenderCopy(s->get_rend(), t->text, NULL, where);
     SDL_SetRenderTarget(s->get_rend(), NULL);
 }
 
-void Texture::clear(Screen *s){
-    SDL_SetRenderDrawColor(s->get_rend(), 0, 0, 0, 255);
+void Texture::clear(Screen *s, bool transparency){
+    if (transparency){
+        SDL_SetTextureBlendMode(this->text, SDL_BLENDMODE_BLEND);
+    }
+    SDL_SetRenderDrawColor(s->get_rend(), 0, 0, 0, 0);
     SDL_SetRenderTarget(s->get_rend(), this->text);
     SDL_RenderClear(s->get_rend());
     SDL_SetRenderTarget(s->get_rend(), NULL);
