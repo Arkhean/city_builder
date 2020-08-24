@@ -1,5 +1,5 @@
 #include <unistd.h>
-#include <list>
+#include <vector>
 #include <SDL2/SDL.h>
 
 #include "sprite.hpp"
@@ -23,10 +23,14 @@ int main(int argc, char * argv[]){
     m.update();
 
     /* buildings */
-    std::list<Building*> buildings;
-    Building * b = new Building(MARKET, 0, 0);
-    buildings.push_back(b);
-    for(Building *b : buildings){ m.add_to_map(b, 0); }
+    std::vector<Building*> buildings;
+
+    buildings.push_back(new Building(MARKET, 1, 1));
+    buildings.push_back(new Building(PREFET, 1, 5));
+    buildings.push_back(new Building(SCHOOL, 7, 2));
+    for(size_t i = 0; i < buildings.size(); i++){
+        m.add_to_map(buildings[i], i);
+    }
     m.update();
 
     /* menu */
@@ -56,6 +60,9 @@ int main(int argc, char * argv[]){
     }
 
     /* libération */
+    for(Building *b : buildings){
+        delete b;
+    }
     free_all_textures();
     quit_SDL_TTF();
     return 0;

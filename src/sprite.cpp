@@ -12,7 +12,7 @@ Sprite::Sprite(int texture_number)
 
 void Sprite::move(int x, int y, int size){
     this->pos.x = x + 58+(size-1)*29 - this->pos.w;
-    this->pos.y = y + 30*size - this->pos.h;
+    this->pos.y = y + 30 - this->pos.h;
 }
 
 void Sprite::blit(Texture *target){

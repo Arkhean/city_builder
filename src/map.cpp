@@ -90,8 +90,8 @@ void Map::update(){
 void Map::add_to_map(Building *building, int index){
     /* first step : clear the area */
     int size = building_size(building->type);
-    for(int i = building->i; i < building->i+size; i++){
-        for(int j = building->j; j < building->j+size; j++){
+    for(int i = building->i; i > building->i-size; i--){
+        for(int j = building->j; j > building->j-size; j--){
             this->tile_types[i][j] = EMPTY;
             delete this->tile_sprites[i][j];
             this->tile_sprites[i][j] = NULL;
