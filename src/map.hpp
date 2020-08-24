@@ -3,16 +3,19 @@
 
 #include "screen.hpp"
 #include "sprite.hpp"
+#include "building.hpp"
 
 #define MAP_SIZE 32
 #define TILE_WIDTH 58
 #define TILE_HEIGHT 30
-enum land_types { GRASS, TREE, WATER, ROCK };
 
 class Map {
     private:
-        Sprite *tiles[MAP_SIZE][MAP_SIZE];
-        int num[MAP_SIZE][MAP_SIZE];
+        Sprite *tile_sprites[MAP_SIZE][MAP_SIZE];
+        int tile_types[MAP_SIZE][MAP_SIZE];
+        // position dans la liste des bâtiments
+        // pour sauvegarde
+        int building_index[MAP_SIZE][MAP_SIZE];
         Texture *big_map;
         Screen *s;
         SDL_Rect visible_area;
@@ -24,7 +27,7 @@ class Map {
         Map& operator=(Map const &) = delete;
         void update();
         void blit_to_screen();
-        void blit_on_map(Sprite *sprite);
+        void add_to_map(Building *building, int index);
         ~Map();
         int get_dx(){return this->visible_area.x;}
         int get_dy(){return this->visible_area.y;}
@@ -33,6 +36,7 @@ class Map {
         int save(std::string path);
         int load(std::string path);
         void randomize();
+        int get_building_index(int i, int j){ return this->building_index[i][j]; }
 };
 
 void localiser(int x, int y, int *i, int *j);

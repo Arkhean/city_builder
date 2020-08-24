@@ -11,7 +11,7 @@ class Menu{
     public:
         Menu(Screen *s);
         void blit();
-        void update_position_indicator(int i, int j);
+        void update_position_indicator(int i, int j, int num_type);
 
 };
 

@@ -11,7 +11,7 @@ void Menu::blit(){
     s->blit_screen(&overlay, NULL);
 }
 
-void Menu::update_position_indicator(int i, int j){
+void Menu::update_position_indicator(int i, int j, int num_type){
     delete position_indicator;
-    position_indicator = new Texture(s, "("+std::to_string(i)+","+std::to_string(j)+")");
+    position_indicator = new Texture(s, "("+std::to_string(i)+","+std::to_string(j)+","+std::to_string(num_type)+")");
 }

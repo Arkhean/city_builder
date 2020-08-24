@@ -19,14 +19,15 @@ int main(int argc, char * argv[]){
 
     /* map */
     Map m(&s);
-    //m.randomize();
+    m.randomize();
     m.update();
 
     /* buildings */
     std::list<Building*> buildings;
     Building * b = new Building(MARKET, 0, 0);
     buildings.push_back(b);
-    for(Building *b : buildings){ b->blit(&m); }
+    for(Building *b : buildings){ m.add_to_map(b, 0); }
+    m.update();
 
     /* menu */
     Menu menu(&s);
@@ -48,7 +49,6 @@ int main(int argc, char * argv[]){
         }
         if (draw){
             m.blit_to_screen();
-            for(Building *b : buildings){ b->blit(&m); }
             menu.blit();
             s.update();
             draw = false;

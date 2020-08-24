@@ -7,6 +7,13 @@
 #define LAND_TEXTURES 421
 #define BUILDING_NUMBER 33
 
+enum types { MARKET, FARM, MINE, CLAY, WOOD, SCHOOL, UNIVERSITY, WINE,
+                    OIL, WEAPON, FURNITURE, THEATRE, COLISEUM, SENATE, PREFET,
+                    FORT, CASERN, BARBER, DOCTOR, THERME, HOSPITAL, TEMPLE1,
+                    TEMPLE2, TEMPLE3, TEMPLE4, TEMPLE5, ORACLE, FISH1, FISH2,
+                    FISH3, FISH4, WELL, FOUNTAIN, WAREHOUSE, GRASS, TREE, WATER,
+                    ROCK, EMPTY  };
+
 class Sprite {
     private:
         int texture_number;

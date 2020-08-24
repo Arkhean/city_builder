@@ -22,13 +22,4 @@ int building_size(int type){
 }
 
 Building::Building(int type, int i, int j)
-                    : type(type), i(i), j(j) {
-    this->sprite = new Sprite(LAND_TEXTURES+type);
-    int x, y;
-    convertir(i, j, &x, &y);
-    this->sprite->move(x, y, building_size(type));
-}
-
-void Building::blit(Map *m){
-    m->blit_on_map(sprite);
-}
+                    : type(type), i(i), j(j) {}

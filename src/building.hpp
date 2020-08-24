@@ -3,25 +3,15 @@
 
 #include "screen.hpp"
 #include "sprite.hpp"
-#include "map.hpp"
-
-enum building_types { MARKET, FARM, MINE, CLAY, WOOD, SCHOOL, UNIVERSITY, WINE,
-                    OIL, WEAPON, FURNITURE, THEATRE, COLISEUM, SENATE, PREFET,
-                    FORT, CASERN, BARBER, DOCTOR, THERME, HOSPITAL, TEMPLE1,
-                    TEMPLE2, TEMPLE3, TEMPLE4, TEMPLE5, ORACLE, FISH1, FISH2,
-                    FISH3, FISH4, WELL, FOUNTAIN, WAREHOUSE };
 
 int building_size(int type);
 
 /* affichage du sprite */
 class Building {
-    private:
-        int type;
-        int i, j;
-        Sprite *sprite;
     public:
+        const int type;
+        const int i, j;
         Building(int type, int i, int j);
-        void blit(Map *m); // TODO: add to map
 };
 
 /* habitations */

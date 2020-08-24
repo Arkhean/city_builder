@@ -62,10 +62,12 @@ Map::Map(Screen *s): s(s), visible_area({0,0,1600,900}){
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
             int r = grassland_rand_number();
-            this->tiles[i][j] = new Sprite(r);
+            this->tile_sprites[i][j] = new Sprite(r);
+            this->tile_types[i][j] = GRASS;
+            this->building_index[i][j] = -1;
             int x,y;
             convertir(i, j, &x, &y);
-            this->tiles[i][j]->move(x, y);
+            this->tile_sprites[i][j]->move(x, y);
         }
     }
 }
@@ -78,13 +80,30 @@ void Map::update(){
     big_map->clear();
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
-            this->tiles[i][j]->blit(big_map);
+            if (this->tile_sprites[i][j] != NULL){
+                this->tile_sprites[i][j]->blit(big_map);
+            }
         }
     }
 }
 
-void Map::blit_on_map(Sprite *sprite){
-    sprite->blit(big_map);
+void Map::add_to_map(Building *building, int index){
+    /* first step : clear the area */
+    int size = building_size(building->type);
+    for(int i = building->i; i < building->i+size; i++){
+        for(int j = building->j; j < building->j+size; j++){
+            this->tile_types[i][j] = EMPTY;
+            delete this->tile_sprites[i][j];
+            this->tile_sprites[i][j] = NULL;
+            this->building_index[i][j] = index;
+        }
+    }
+    /* then : add the new sprite and fix its position */
+    tile_types[building->i][building->j] = building->type;
+    this->tile_sprites[building->i][building->j] = new Sprite(LAND_TEXTURES+building->type);
+    int x, y;
+    convertir(building->i, building->j, &x, &y);
+    this->tile_sprites[building->i][building->j]->move(x, y, size);
 }
 
 void Map::blit_to_screen(){
@@ -130,7 +149,7 @@ int Map::get_water_tile(int i, int j){
 				-1, -1, -1, -1, 187, -1, -1, 169, 187, -1,			//18
 				177, 173, 166, 166, 197, 152+(rand()%4), 166, 166, 197, 152+(rand()%4),	//19
 				162+(rand()%2), 162+(rand()%2), 194, 193, 162+(rand()%2), 162+(rand()%2), -1, 140+(rand()%4), 166, 166,		//20
-				197, 162+(rand()%2), 166, -1, 197, 197, 162+(rand()%2), 162+(rand()%2), 148+(rand()%4), -1,				//21
+				197, 162+(rand()%2), 166, -1, 197, 152+(rand()%4), 162+(rand()%2), 162+(rand()%2), 148+(rand()%4), -1,				//21
 				162+(rand()%2), -1, 168, 140+(rand()%4), 148+(rand()%4), 148+(rand()%4), 190, 136+(rand()%4), 148+(rand()%4), -1,	//22
 				190, 136+(rand()%4), 186, 175, 178, 175, 132+(rand()%4), -1, -1, 172,
 				148+(rand()%4), 148+(rand()%4), 190, 136+(rand()%4), 148+(rand()%4), 185, -1, 136+(rand()%4), 132+(rand()%4), 132+(rand()%4),
@@ -140,7 +159,7 @@ int Map::get_water_tile(int i, int j){
     int dj[] = {-1,-1,-1,0,1,1,1,0};
 	for(int k = 0; k < 8; k++){
         if (i+di[k] < MAP_SIZE && i+di[k] >= 0 && j+dj[k] < MAP_SIZE && j+dj[k] >= 0){
-            r += (d * (this->num[i+di[k]][j+dj[k]] == WATER));
+            r += (d * (this->tile_types[i+di[k]][j+dj[k]] == WATER));
         }
         d *= 2;
     }
@@ -167,20 +186,20 @@ int Map::determine_sprite(int n, int i, int j){
     }
 }
 
-void Map::load_tiles(int new_num[MAP_SIZE][MAP_SIZE]){
+void Map::load_tiles(int new_tile_types[MAP_SIZE][MAP_SIZE]){
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
-            this->num[i][j] = new_num[i][j];
+            this->tile_types[i][j] = new_tile_types[i][j];
         }
     }
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
-            int r = this->determine_sprite(this->num[i][j], i, j);
-            delete this->tiles[i][j];
-            this->tiles[i][j] = new Sprite(r);
+            int r = this->determine_sprite(this->tile_types[i][j], i, j);
+            delete this->tile_sprites[i][j];
+            this->tile_sprites[i][j] = new Sprite(r);
             int x,y;
             convertir(i, j, &x, &y);
-            this->tiles[i][j]->move(x, y);
+            this->tile_sprites[i][j]->move(x, y);
         }
     }
 }
@@ -191,7 +210,7 @@ int Map::save(std::string path){
     if (myfile.is_open()){
         for(int i = 0; i < MAP_SIZE; i++){
             for(int j = 0; j < MAP_SIZE; j++){
-                myfile << this->num[i][j];
+                myfile << this->tile_types[i][j] << "-";
             }
             myfile << "\n";
         }
@@ -208,12 +227,19 @@ int Map::load(std::string path){
     std::cout << "loading from " << path << std::endl;
     std::string line;
     std::ifstream myfile (path);
-    int new_num[MAP_SIZE][MAP_SIZE] = {0};
+    int new_tile_types[MAP_SIZE][MAP_SIZE] = {0};
     if (myfile.is_open()){
         for(int i = 0; i < MAP_SIZE; i++){
             if ( getline (myfile, line) ){
-                for(int j = 0; j < MAP_SIZE; j++){
-                    new_num[i][j] = line[j] - '0';
+                std::string delimiter = "-";
+                size_t pos = 0;
+                int j = 0;
+                std::string token;
+                while ((pos = line.find(delimiter)) != std::string::npos) {
+                    token = line.substr(0, pos);
+                    new_tile_types[i][j] = atoi(token.c_str());
+                    line.erase(0, pos + delimiter.length());
+                    j++;
                 }
             }
             else{
@@ -222,7 +248,8 @@ int Map::load(std::string path){
             }
         }
         myfile.close();
-        this->load_tiles(new_num);
+        this->load_tiles(new_tile_types);
+        this->update();
     }
     else{
         std::cout << "Unable to open file\n";
@@ -247,7 +274,6 @@ void Map::randomize(){
             }
         }
     }
-    int proba[] = {0, 15, 4, 6};
     int di[] = {1,0,-1,0};
     int dj[] = {0,-1,0,1};
     for(int n = 0; n < 10; n++){
@@ -257,9 +283,24 @@ void Map::randomize(){
                     for(int k = 0; k < 4; k++){
                         if (i+di[k] < MAP_SIZE && i+di[k] >= 0
                             && j+dj[k] < MAP_SIZE && j+dj[k] >= 0){
-                            if ((rand()%proba[tiles[i][j]]) == 0){
-                                tiles[i+di[k]][j+dj[k]] = tiles[i][j];
-                            }
+                                switch (tiles[i][j]) {
+                                    case WATER:
+                                        if ((rand()%4) == 0){
+                                            tiles[i+di[k]][j+dj[k]] = tiles[i][j];
+                                        }
+                                        break;
+                                    case TREE:
+                                        if ((rand()%15) == 0){
+                                            tiles[i+di[k]][j+dj[k]] = tiles[i][j];
+                                        }
+                                        break;
+                                    case ROCK:
+                                        if ((rand()%6) == 0){
+                                            tiles[i+di[k]][j+dj[k]] = tiles[i][j];
+                                        }
+                                        break;
+                                }
+
                         }
                     }
                 }
@@ -267,4 +308,5 @@ void Map::randomize(){
         }
     }
     this->load_tiles(tiles);
+    this->update();
 }
