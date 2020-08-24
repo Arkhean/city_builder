@@ -2,12 +2,14 @@
 
 Texture *textures[LAND_TEXTURES+BUILDING_NUMBER];
 
-Sprite::Sprite(int texture_number)
+Sprite::Sprite(int texture_number, int x, int y, int size)
     : texture_number(texture_number) {
-    this->pos.x = 0;
-    this->pos.y = 0;
-    this->pos.w = textures[this->texture_number]->get_width();
-    this->pos.h = textures[this->texture_number]->get_height();
+    int w = textures[texture_number]->get_width();
+    int h = textures[texture_number]->get_height();
+    this->pos.x = x + 58+(size-1)*29 - w;
+    this->pos.y = y + 30 - h;
+    this->pos.w = w;
+    this->pos.h = h;
 }
 
 void Sprite::move(int x, int y, int size){

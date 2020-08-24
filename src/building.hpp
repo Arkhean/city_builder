@@ -4,7 +4,7 @@
 #include "screen.hpp"
 #include "sprite.hpp"
 
-int building_size(int type);
+int tile_size(int type);
 
 /* affichage du sprite */
 class Building {
