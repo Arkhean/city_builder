@@ -113,6 +113,7 @@ Texture::Texture(Screen *s, int width, int height){
     this->cadre = new SDL_Rect;
     this->text = SDL_CreateTexture(s->get_rend(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
     initRect(this->cadre, 0, 0, width, height);
+    // TODO: initialiser le fond !!
 }
 
 Texture::Texture(Screen * s, std::string str, SDL_Color color){
@@ -206,11 +207,4 @@ void Texture::clear(bool transparency){
     SDL_SetRenderTarget(s->get_rend(), this->text);
     SDL_RenderClear(s->get_rend());
     SDL_SetRenderTarget(s->get_rend(), NULL);
-}
-
-// =============================================================================
-Button::Button(Screen *s, std::string str) : Texture(s, str){}
-
-bool Button::is_click(int x, int y){
-    return x >= cadre->x && x <= cadre->x+cadre->w && y >= cadre->y && y <= cadre->y+cadre->h;
 }

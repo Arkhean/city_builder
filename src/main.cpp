@@ -19,7 +19,7 @@ int main(int argc, char * argv[]){
 
     /* map */
     Map m(&s);
-    //m.randomize();
+    m.randomize();
 
     /* buildings */
     std::vector<Building*> buildings;

@@ -120,3 +120,50 @@ requiert:
 - accès barbier
 - accès colisée
 - accès hôpital
+
+
+#################
+##### menus #####
+#################
+
+1 habitations
+2 routes
+3 supprimer
+4 productions agricoles
+*** ferme
+*** champs ...
+*** pêcherie
+5 productions industrielles
+*** mines
+*** bois
+*** argile
+*** atelier poterie
+*** atelier armes
+*** atelier meubles
+*** atelier huile
+*** atelier vins
+*** entrepôt
+6 eau
+*** puits
+*** fontaine
+7 loisirs
+*** théâtre
+*** colisée
+8 temples
+*** oracle
+*** temples 1 ...
+9 soin
+*** médecin
+*** barbier
+*** hôpital
+*** thermes
+10 sécurité
+*** prefet
+*** caserne
+*** fort
+11 centre ville
+*** marché
+*** sénat
+12 éducation
+*** école
+*** université

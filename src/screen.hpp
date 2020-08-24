@@ -62,16 +62,5 @@ class Screen{
         void draw_circle(int x, int y, int r, SDL_Color color);
 };
 
-// =============================================================================
-
-class Button : public Texture{
-    private :
-
-    public :
-        Button(Screen *s, std::string str);
-        bool is_click(int x, int y);
-};
-
-
 
 #endif
