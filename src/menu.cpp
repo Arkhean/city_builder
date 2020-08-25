@@ -1,5 +1,6 @@
 #include <iostream>
 #include "menu.hpp"
+#include "sprite.hpp"
 
 #define PANEL_NUMBER 163
 
@@ -58,6 +59,18 @@ std::vector<std::vector<std::string>> sub_menu_entry_strings = {
     {"Atelier de poterie", "Atelier de meubles", "Atelier d'huile", "Atelier de vin", "Atelier d'armes"},
 };
 
+std::vector<std::vector<int>> sub_menu_entry_values = {
+    {WELL, FOUNTAIN},
+    {FARM, WHEAT_FIELD, VEGETABLE_FIELD, OLIVE_GROVE, VINE, ORCHARD, FISH1, CATTLE_PEN},
+    {MARKET, SENATE, WAREHOUSE},
+    {THEATRE, COLISEUM},
+    {SCHOOL, UNIVERSITY },
+    {ORACLE, TEMPLE_CERES, TEMPLE_MERCURE, TEMPLE_MARS, TEMPLE_NEPTUNE, TEMPLE_VENUS},
+    {PREFET, CASERN, FORT},
+    {DOCTOR, BARBER, HOSPITAL},
+    {POTERY, FURNITURE, OIL, WINE, WEAPON},
+};
+
 
 Menu::Menu(Screen *s) : overlay(s, 1600, 900), s(s), menu_state(NONE){
     position_indicator = new Texture(s, "(0,0)");
@@ -69,16 +82,18 @@ Menu::Menu(Screen *s) : overlay(s, 1600, 900), s(s), menu_state(NONE){
 
     /* création des boutons */
     // 4 lignes de 3 éléments
+    int values[NB_BUTTONS] = { EMPTY, HOUSE, ROAD }; // et 0 après...
     for(int i = 0; i < NB_BUTTONS; i++){
-        buttons[i] = new Button_menu(SHIFT_MENU, 100+i*50, 26+4*i);
+        buttons[i] = new Button_menu(SHIFT_MENU, 100+i*50, 26+4*i, values[i]);
     }
 
     /* création des boutons sous-menu */
     int y = 100;
-    for(std::vector<std::string> v : sub_menu_entry_strings){
+    for(std::vector<int> v : sub_menu_entry_values){
         std::vector<Button_text*> tmp;
-        for(std::string str : v){
-            tmp.push_back(new Button_text(1600 - 16*20 - 100, y, str, s));
+        for(int value : v){
+            std::string str = names[value-LAND_NUMBER];
+            tmp.push_back(new Button_text(1600 - 16*20 - 100, y, str, s, value));
             y += 30;
         }
         sub_menu_entries.push_back(tmp);
@@ -141,7 +156,6 @@ bool Menu::mouse_motion(int x, int y){
             if (b->is_inside(x, y)){
                 b->set_state(OVER);
                 event_handled = true;
-
             }
             else{
                 b->set_state(NORMAL);
@@ -162,9 +176,7 @@ bool Menu::mouse_click(int x, int y){
                 menu_state = i - 2; // correpond à l'enum de menu_states
             }
             else {
-                // TODO
-                std::cout << "batiment choisi\n";
-                menu_state = NONE;
+                std::cout << buttons[i]->value_on_click << std::endl;
             }
             event_handled = true;
         }
@@ -177,12 +189,11 @@ bool Menu::mouse_click(int x, int y){
         for(Button_text* b : sub_menu_entries[menu_state-1]){
             if (b->is_inside(x, y)){
                 event_handled = true;
-                // TODO
-                std::cout << "batiment choisi\n";
-                menu_state = NONE;
+                std::cout << b->value_on_click << std::endl;
             }
         }
     }
+    menu_state = NONE;
     return event_handled;
 }
 
@@ -194,8 +205,8 @@ void Menu::set_fps(float avgFPS){
 
 /******************************************************************************/
 
-Button_menu::Button_menu(int x, int y, int texture_num)
-    : cadre({x, y, panelings[texture_num]->get_width(), panelings[texture_num]->get_height()}),
+Button_menu::Button_menu(int x, int y, int texture_num, int value_on_click)
+    : Button(value_on_click), cadre({x, y, panelings[texture_num]->get_width(), panelings[texture_num]->get_height()}),
     texture_num(texture_num) {}
 
 bool Button_menu::is_inside(int x, int y) const{
@@ -209,8 +220,8 @@ void Button_menu::blit(Texture *target) const{
 
 /******************************************************************************/
 
-Button_text::Button_text(int x, int y, std::string text, Screen *s)
-    : cadre({x, y, 16*20, 20}) {
+Button_text::Button_text(int x, int y, std::string text, Screen *s, int value_on_click)
+    : Button(value_on_click), cadre({x, y, 16*20, 20}) {
     SDL_Color color = { 30, 30, 30, 255 };
     texture_text = new Texture(s, text, color);
     int w = texture_text->get_width();

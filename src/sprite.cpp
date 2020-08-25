@@ -1,6 +1,27 @@
 #include "sprite.hpp"
 
-Texture *textures[LAND_TEXTURES+BUILDING_NUMBER];
+std::string names[] = {
+    "Marché",
+    "Ferme", "Mine de fer", "Puits d'argile", "Cabane de bûcheron", "Ecole",
+    "Université", "Atelier de vin", "Atelier d'huile", "Atelier d'armes",
+    "Atelier de meubles", "Théâtre", "Colisée", "Sénat",
+    "Préfecture", "Fort", "Caserne", "Barbier",
+    "Médecin", "Thermes", "Hôpital",
+    "Temple de Cérès", "Temple de Neptune",
+    "Temple de Mercure", "Temple de Mars", "Temple de Vénus",
+    "Oracle", "Pêcherie", "", "", "",
+    "Puits", "Fontaine", "Atelier de poterie",
+    "Champs de blé", "", "", "", "",
+    "Champs de légumes", "", "", "", "",
+    "Vergers", "", "", "", "",
+    "Oliveraie", "", "", "", "",
+    "Vignes", "", "", "", "",
+    "Enclos à bétail", "", "", "", "",
+    "Habitations", "Entrepôt",
+    "Herbes", "Arbres", "Eau", "Rocher", "Route", "vide",
+};
+
+Texture *textures[LAND_NUMBER+BUILDING_NUMBER];
 
 Sprite::Sprite(int texture_number, int x, int y, int size)
     : texture_number(texture_number) {
@@ -26,7 +47,7 @@ void Sprite::blit(Texture *target){
 void load_all_textures(Screen *s){
     /* lands */
     char path[] = "data/lands/land_001.png";
-    for(int i = 0; i < LAND_TEXTURES; i++){
+    for(int i = 0; i < LAND_NUMBER; i++){
         // changer le numéro de fin, padding...
         int n = i + 1;
         if (n < 10){
@@ -63,8 +84,8 @@ void load_all_textures(Screen *s){
             path2[25] = '0' + ((n / 10) % 10);
             path2[26] = '0' + (n % 10);
         }
-        textures[LAND_TEXTURES+i] = new Texture(s, path2);
-        if (textures[LAND_TEXTURES+i] == NULL){
+        textures[LAND_NUMBER+i] = new Texture(s, path2);
+        if (textures[LAND_NUMBER+i] == NULL){
             std::cout << "error texture load\n";
             exit(1);
         }

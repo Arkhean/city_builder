@@ -24,7 +24,8 @@ class Button {
     protected:
         int state; // normal, survolé, cliqué
     public:
-        Button() : state(NORMAL){};
+        const int value_on_click;
+        Button(int value_on_click) : state(NORMAL), value_on_click(value_on_click) {};
         virtual ~Button() {}
         void set_state(int state){ this->state = state; }
         virtual bool is_inside(int x, int y) const =0;
@@ -38,7 +39,7 @@ class Button_menu : public Button {
         // numero des textures à utiliser (+1 pour survolé, +2 pour cliqué)
         int texture_num;
     public:
-        Button_menu(int x, int y, int texture_num);
+        Button_menu(int x, int y, int texture_num, int value_on_click);
         virtual ~Button_menu() {}
         bool is_inside(int x, int y) const;
         void blit(Texture *target) const;
@@ -50,7 +51,7 @@ class Button_text : public Button {
         SDL_Rect cadre_text;
         Texture * texture_text;
     public:
-        Button_text(int x, int y, std::string text, Screen *s);
+        Button_text(int x, int y, std::string text, Screen *s, int value_on_click);
         virtual ~Button_text() {}
         bool is_inside(int x, int y) const;
         void blit(Texture *target) const;
