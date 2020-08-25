@@ -8,6 +8,7 @@
 #include "screen.hpp"
 #include "menu.hpp"
 #include "interactions.hpp"
+#include "timer.hpp"
 
 int main(int argc, char * argv[]){
     /* initialisation */
@@ -47,20 +48,29 @@ int main(int argc, char * argv[]){
 
     SDL_Event event;
     bool attendre = true;
-    bool draw = false;
+
+    LTimer fpsTimer; //The frames per second timer
+    int countedFrames = 0;
+    fpsTimer.start();
 
     while(attendre){
-        SDL_Delay(50);
+        SDL_Delay(20);
+        //Calculate and correct fps
+        float avgFPS = countedFrames / ( fpsTimer.getTicks() / 1000.f );
+        if( avgFPS > 2000000 ) {
+            avgFPS = 0;
+        }
+        menu.set_fps(avgFPS);
 
+        /* handle events */
         while(SDL_PollEvent(&event)){
-            draw = interactions(event, attendre, &m, &menu) || draw;
+            interactions(event, attendre, &m, &menu);
         }
-        if (draw){
-            m.blit_to_screen();
-            menu.blit();
-            s.update();
-            draw = false;
-        }
+        /* update screen */
+        m.blit_to_screen();
+        menu.blit();
+        s.update();
+        ++countedFrames;
     }
 
     /* libération */

@@ -13,11 +13,12 @@ void init_SDL_TTF(){
         exit(1);
     }
     TTF_Init();
-    police = TTF_OpenFont("./data/DejaVuSans.ttf", 20);
+    police = TTF_OpenFont("./data/DejaVuSans.ttf", 15);
     if (police == NULL){
         std::cout << "erreur openFont\n";
         exit(1);
     }
+    TTF_SetFontStyle(police, TTF_STYLE_BOLD);
 }
 
 void quit_SDL_TTF(){
@@ -75,14 +76,14 @@ void Screen::blit_screen(Texture * t, SDL_Rect * where, SDL_Rect * partie){
     t->get_cadre()->y = where != NULL ? where->y : 0;
 }
 
-SDL_Renderer * Screen::get_rend(){
+SDL_Renderer * Screen::get_rend() const{
     return this->rend;
 }
 
-int Screen::get_width(){
+int Screen::get_width() const{
     return this->cadre->w;
 }
-int Screen::get_height(){
+int Screen::get_height() const{
     return this->cadre->h;
 }
 
@@ -113,7 +114,7 @@ Texture::Texture(Screen *s, int width, int height){
     this->cadre = new SDL_Rect;
     this->text = SDL_CreateTexture(s->get_rend(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
     initRect(this->cadre, 0, 0, width, height);
-    // TODO: initialiser le fond !!
+    this->clear();
 }
 
 Texture::Texture(Screen * s, std::string str, SDL_Color color){
@@ -144,18 +145,18 @@ Texture::~Texture(){
     delete this->cadre;
 }
 
-SDL_Rect * Texture::get_cadre(){
+SDL_Rect * Texture::get_cadre() const{
     return this->cadre;
 }
 
-int Texture::get_width(){
+int Texture::get_width() const{
     return this->cadre->w;
 }
-int Texture::get_height(){
+int Texture::get_height()const {
     return this->cadre->h;
 }
 
-Uint32 Texture::get_pixel(int x, int y){
+Uint32 Texture::get_pixel(int x, int y) const{
     int nbopp = surface->format->BitsPerPixel/8;
     Uint8 *p = (Uint8*)surface->pixels + y * surface->pitch + x * nbopp;
     switch (nbopp){
@@ -193,7 +194,7 @@ void Texture::update(){
     this->text = SDL_CreateTextureFromSurface(s->get_rend(), this->surface);
 }
 
-void Texture::blit(Texture * t, SDL_Rect * where){
+void Texture::blit(Texture * t, const SDL_Rect * where) const{
     SDL_SetRenderTarget(s->get_rend(), this->text);
     SDL_RenderCopy(s->get_rend(), t->text, NULL, where);
     SDL_SetRenderTarget(s->get_rend(), NULL);

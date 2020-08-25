@@ -21,21 +21,21 @@ class Texture{
         Screen *s; // pour mémoire
     public :
         SDL_Texture * text;
-        int get_width();
-        int get_height();
+        int get_width() const;
+        int get_height() const;
         Texture(Screen *s, int witdh, int height);
         Texture(Screen *s, std::string str, SDL_Color color={255,255,255,255});
         Texture(Texture const &) = delete;
         Texture& operator=(Texture const &) = delete;
         ~Texture();
-        SDL_Rect * get_cadre();
-        Uint32 get_pixel(int x, int y);
+        SDL_Rect * get_cadre() const;
+        Uint32 get_pixel(int x, int y) const;
         void set_pixel(int x, int y, SDL_Color color);
         void set_pixel(int x, int y, Uint32 color);
         void update();
         void clear(bool transparency=false);
-        void blit(Texture * t, SDL_Rect * where=NULL);
-        SDL_PixelFormat * get_format(){return this->surface->format;}
+        void blit(Texture * t, const SDL_Rect * where=NULL) const;
+        SDL_PixelFormat * get_format() const {return this->surface->format;}
 };
 
 // =============================================================================
@@ -47,14 +47,14 @@ class Screen{
         SDL_Texture * frame;
         SDL_Rect * cadre;
     public :
-        int get_width();
-        int get_height();
+        int get_width() const;
+        int get_height() const;
         Screen(int width=MIN_WIDTH, int height=MIN_HEIGHT);
         Screen(Screen const &) = delete;
         Screen& operator=(Screen const &) = delete;
         ~Screen();
         void clear();
-        SDL_Renderer * get_rend();
+        SDL_Renderer * get_rend() const;
         // if where is null, blit cover the whole screen
         void blit_screen(Texture * t, SDL_Rect * where, SDL_Rect * partie=NULL);
         void update();
