@@ -3,7 +3,7 @@
 
 #include "interactions.hpp"
 
-bool interactions(SDL_Event event, bool &attendre, Map *m, Menu *menu){
+void interactions(SDL_Event event, bool &attendre, Map *m, Menu *menu){
     const Uint8 *state;
     int d = 50;
     int i, j, x, y;
@@ -38,31 +38,24 @@ bool interactions(SDL_Event event, bool &attendre, Map *m, Menu *menu){
             if (state[SDL_SCANCODE_R]){
                 m->randomize();
             }
-            return true;
             break;
         case SDL_MOUSEMOTION :
             //la souris a bougé
             x = event.button.x;
             y = event.button.y;
-            if (x > SHIFT_MENU){
-                menu->mouse_motion(x, y);
-            }
-            else{
+            if (!menu->mouse_motion(x, y)){
                 localiser(x+m->get_dx(), y+m->get_dy(), &i, &j);
                 num_type = m->get_building_index(i, j);
                 menu->update_position_indicator(i, j, num_type);
             }
-            return true;
             break;
         case SDL_MOUSEBUTTONDOWN :
             //on a cliqué
             x = event.button.x;
             y = event.button.y;
-            if (x > SHIFT_MENU){
-                menu->mouse_click(x, y);
-                return true;
+            if (!menu->mouse_click(x, y)){
+                // click on the map ...
             }
             break;
     }
-    return false;
 }

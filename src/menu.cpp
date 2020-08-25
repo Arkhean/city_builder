@@ -1,7 +1,5 @@
 #include <iostream>
-
 #include "menu.hpp"
-
 
 #define PANEL_NUMBER 163
 
@@ -48,34 +46,63 @@ void load_all_panel_textures(Screen *s){
     panelings[PANEL_NUMBER+1]->blit(panelings[5], &rect);
 }
 
-Menu::Menu(Screen *s) : overlay(s, 1600, 900), s(s){
+std::vector<std::vector<std::string>> sub_menu_entry_strings = {
+    {"Puits", "Fontaine"},
+    {"Ferme", "Champ de blé", "Champ de légumes", "Oliveraie", "Vigne", "Verger", "Pêcherie", "Enclos"},
+    {"Marché", "Sénat", "Entrepôt"},
+    {"Théâtre", "Colisée"},
+    {"Ecole", "Université" },
+    {"Oracle", "Temple de Cérès", "Temple de Mercure", "Temple de Mars", "Temple de Neptune", "Temple de Vénus"},
+    {"Préfecture", "Caserne", "Fort"},
+    {"Médecin", "Barbier", "Hôpital"},
+    {"Atelier de poterie", "Atelier de meubles", "Atelier d'huile", "Atelier de vin", "Atelier d'armes"},
+};
+
+
+Menu::Menu(Screen *s) : overlay(s, 1600, 900), s(s), menu_state(NONE){
     position_indicator = new Texture(s, "(0,0)");
     fps_indicator = new Texture(s, "0 fps");
     //SDL_Color gray = {100, 100, 100, 100};
-    right_bar = new Texture(s, 60, 900);
+    //right_bar = new Texture(s, 60, 900);
 
-    test = new Button_text(500, 20, "Coucou !!", s);
     load_all_panel_textures(s);
 
     /* création des boutons */
     // 4 lignes de 3 éléments
     for(int i = 0; i < NB_BUTTONS; i++){
-        buttons[i] = new Button_menu(10, 100+i*50, 26+4*i);
+        buttons[i] = new Button_menu(SHIFT_MENU, 100+i*50, 26+4*i);
+    }
+
+    /* création des boutons sous-menu */
+    int y = 100;
+    for(std::vector<std::string> v : sub_menu_entry_strings){
+        std::vector<Button_text*> tmp;
+        for(std::string str : v){
+            tmp.push_back(new Button_text(1600 - 16*20 - 100, y, str, s));
+            y += 30;
+        }
+        sub_menu_entries.push_back(tmp);
+        y = 100;
     }
 }
 
 void Menu::blit() {
     overlay.clear(true);
     SDL_Rect position_indicator_rect = {0,0, position_indicator->get_width(), position_indicator->get_height()};
-    SDL_Rect right_bar_rect = {SHIFT_MENU, 0, 60, 900};
+    //SDL_Rect right_bar_rect = {SHIFT_MENU, 0, 60, 900};
     SDL_Rect fps_indicator_rect = {150, 0, fps_indicator->get_width(), fps_indicator->get_height()};
     overlay.blit(position_indicator, &position_indicator_rect);
     overlay.blit(fps_indicator, &fps_indicator_rect);
-    overlay.blit(right_bar, &right_bar_rect);
+    //overlay.blit(right_bar, &right_bar_rect);
     for(int i = 0; i < NB_BUTTONS; i++){
-        buttons[i]->blit(right_bar);
+        buttons[i]->blit(&overlay);
     }
-    test->blit(&overlay);
+    /* sub menu for selecting building */
+    if (menu_state != NONE){
+        for(Button_text* b : sub_menu_entries[menu_state-1]){
+            b->blit(&overlay);
+        }
+    }
     s->blit_screen(&overlay, NULL);
 }
 
@@ -86,7 +113,7 @@ void Menu::update_position_indicator(int i, int j, int num_type){
 
 Menu::~Menu(){
     delete position_indicator;
-    delete right_bar;
+    //delete right_bar;
     for(int i = 0; i < NB_BUTTONS; i++){
         delete buttons[i];
     }
@@ -95,28 +122,68 @@ Menu::~Menu(){
     }
 }
 
-void Menu::mouse_motion(int x, int y){
-    x = x - SHIFT_MENU;
+// return if event was handled
+bool Menu::mouse_motion(int x, int y){
+    bool event_handled = false;
+    /* boutons de gauche */
     for(int i = 0; i < NB_BUTTONS; i++){
         if (buttons[i]->is_inside(x, y)){
             buttons[i]->set_state(OVER);
+            event_handled = true;
         }
         else{
             buttons[i]->set_state(NORMAL);
         }
     }
+    /* sub menu for selecting building */
+    if (menu_state != NONE){
+        for(Button_text* b : sub_menu_entries[menu_state-1]){
+            if (b->is_inside(x, y)){
+                b->set_state(OVER);
+                event_handled = true;
+
+            }
+            else{
+                b->set_state(NORMAL);
+            }
+        }
+    }
+    return event_handled;
 }
 
-void Menu::mouse_click(int x, int y){
-    x = x - SHIFT_MENU;
+// return if event was handled
+bool Menu::mouse_click(int x, int y){
+    bool event_handled = false;
+    /* boutons de gauche */
     for(int i = 0; i < NB_BUTTONS; i++){
         if (buttons[i]->is_inside(x, y)){
             buttons[i]->set_state(CLICKED);
+            if (i > 2) { // les 3 premiers n'ouvrent pas de sous menu
+                menu_state = i - 2; // correpond à l'enum de menu_states
+            }
+            else {
+                // TODO
+                std::cout << "batiment choisi\n";
+                menu_state = NONE;
+            }
+            event_handled = true;
         }
         else{
             buttons[i]->set_state(NORMAL);
         }
     }
+    /* sub menu for selecting building */
+    if (menu_state != NONE){
+        for(Button_text* b : sub_menu_entries[menu_state-1]){
+            if (b->is_inside(x, y)){
+                event_handled = true;
+                // TODO
+                std::cout << "batiment choisi\n";
+                menu_state = NONE;
+            }
+        }
+    }
+    return event_handled;
 }
 
 void Menu::set_fps(float avgFPS){

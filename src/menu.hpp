@@ -1,11 +1,22 @@
 #ifndef MENU_HPP
 #define MENU_HPP
 
+#include <vector>
 #include "screen.hpp"
 
-enum states { NORMAL, OVER, CLICKED, DISABLED };
+enum button_states { NORMAL, OVER, CLICKED, DISABLED };
+enum menu_states { NONE,
+                WATER_MENU,
+                AGRICOLE_MENU,
+                TOWN_MENU,
+                LEISURE_MENU,
+                EDUCATION_MENU,
+                RELIGION_MENU,
+                SECURITY_MENU,
+                HEALTHCARE_MENU,
+                INDUSTRY_MENU };
 #define NB_BUTTONS 12
-#define SHIFT_MENU 1540
+#define SHIFT_MENU 1550
 
 // use texture from paneling
 
@@ -52,19 +63,20 @@ class Menu{
     private:
         Texture overlay;
         Texture * position_indicator;
-        Texture * right_bar;
+        //Texture * right_bar;
         Screen *s;
         Button_menu *buttons[NB_BUTTONS];
         Texture * fps_indicator;
-        Button_text *test;
+        int menu_state;
+        std::vector<std::vector<Button_text *>> sub_menu_entries;
     public:
         Menu(Screen *s);
         ~Menu();
         void blit();
         void set_fps(float avgFPS);
         void update_position_indicator(int i, int j, int num_type);
-        void mouse_motion(int x, int y);
-        void mouse_click(int x, int y);
+        bool mouse_motion(int x, int y);
+        bool mouse_click(int x, int y);
 };
 
 #endif

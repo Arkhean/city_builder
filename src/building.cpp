@@ -28,14 +28,14 @@ int tile_size(int type){
 
 std::string names[] = {"Marché", "Ferme", "Mine de fer", "Puits d'argile",
                     "Cabane de bûcheron", "Ecole", "Université", "Atelier de vin",
-                    "Atelier d'huile", "Atelier de meubles", "Théâtre", "Colisée",
+                    "Atelier de poterie", "Atelier d'huile", "Atelier de meubles", "Théâtre", "Colisée",
                 "Sénat", "Préfecture", "Fort", "Caserne", "Barbier", "Médecin",
                 "Thermes", "Hôpital", "Temple", "Temple", "Temple", "Temple",
                 "Temple", "Oracle", "Pêcherie", "Pêcherie", "Pêcherie", "Pêcherie",
                 "Puits", "Fontaine", "Entrepôt"};
 int maintenance_costs[] = { 100,100,100,100,100,100,100,100,100,100,100,100,100,
                 100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,
-            100,100,100,100 };
+            100,100,100,100,100 };
 
 Building::Building(int type, int i, int j)
         : type(type), i(i), j(j), name(names[type-LAND_TEXTURES]), maintenance_cost(maintenance_costs[type-LAND_TEXTURES]) {}
