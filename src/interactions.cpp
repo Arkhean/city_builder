@@ -8,6 +8,7 @@ void interactions(SDL_Event event, bool &attendre, Map *m, Menu *menu){
     int d = 50;
     int i, j, x, y;
     int num_type;
+    Building *b;
     switch (event.type){
         case SDL_QUIT :
             attendre = false;
@@ -45,16 +46,25 @@ void interactions(SDL_Event event, bool &attendre, Map *m, Menu *menu){
             y = event.button.y;
             if (!menu->mouse_motion(x, y)){
                 localiser(x+m->get_dx(), y+m->get_dy(), &i, &j);
-                num_type = m->get_building_index(i, j);
+                b = m->get_building_link(i, j);
+                if (b == NULL){
+                    num_type = -1;
+                }
+                else{
+                    num_type = b->type;
+                }
                 menu->update_position_indicator(i, j, num_type);
+                m->handle_mouse_motion(i, j);
             }
             break;
         case SDL_MOUSEBUTTONDOWN :
             //on a cliqué
             x = event.button.x;
             y = event.button.y;
-            if (!menu->mouse_click(x, y)){
-                // click on the map ...
+            if (!menu->mouse_click(x, y, m)){
+                // click on the map
+                localiser(x+m->get_dx(), y+m->get_dy(), &i, &j);
+                m->handle_mouse_click(i, j);
             }
             break;
     }

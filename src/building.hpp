@@ -53,4 +53,13 @@ class House : public Building {
 
 };
 
+/******************************************************************************/
+// building management
+
+#include <vector>
+
+Building * create_new_building(int type, int i, int j);
+void clear_all_buildings();
+
+
 #endif

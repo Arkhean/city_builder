@@ -54,17 +54,20 @@ int rock_rand_number(){
 /******************************************************************************/
 
 
-Map::Map(Screen *s): s(s), visible_area({0,0,1600,900}){
+Map::Map(Screen *s): s(s), visible_area({0,0,1600,900}), build_mode(NO_BUILDING) {
     /* initialize random seed: */
     srand (time(NULL));
     /* initialize map texture */
     this->big_map = new Texture(s, MAP_SIZE*TILE_WIDTH+MAP_SIZE, MAP_SIZE*TILE_HEIGHT);
+    this->map_overlay = new Texture(s, MAP_SIZE*TILE_WIDTH+MAP_SIZE, MAP_SIZE*TILE_HEIGHT);
+    this->map_overlay->clear(true);
+    this->building_tile = new Sprite(343, 0, 0);
     /* fill the map */
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
             this->tile_sprites[i][j] = NULL;
             this->tile_types[i][j] = GRASS;
-            this->building_index[i][j] = -1;
+            this->building_links[i][j] = NULL;
         }
     }
     this->update_all_sprites();
@@ -72,9 +75,16 @@ Map::Map(Screen *s): s(s), visible_area({0,0,1600,900}){
 
 Map::~Map(){
     delete this->big_map;
+    delete this->map_overlay;
+    for(int i = 0; i < MAP_SIZE; i++){
+        for(int j = 0; j < MAP_SIZE; j++){
+            delete this->tile_sprites[i][j];
+        }
+    }
+    delete building_tile;
 }
 
-void Map::add_to_map(Building *building, int index){
+void Map::add_to_map(Building *building){
     /* first step : check the area */
     int size = tile_size(building->type);
     for(int i = building->i; i > building->i-size; i--){
@@ -91,11 +101,15 @@ void Map::add_to_map(Building *building, int index){
             this->tile_types[i][j] = EMPTY;
             delete this->tile_sprites[i][j];
             this->tile_sprites[i][j] = NULL;
-            this->building_index[i][j] = index;
+            this->building_links[i][j] = building;
         }
     }
     /* then : add the new sprite and fix its position */
-    tile_types[building->i][building->j] = building->type;
+    this->tile_types[building->i][building->j] = building->type;
+    int x, y;
+    convertir(building->i, building->j, &x, &y);
+    this->tile_sprites[building->i][building->j] = new Sprite(building->type,
+                                                x, y, tile_size(building->type));
 }
 
 void Map::translate(int dx, int dy){
@@ -309,17 +323,6 @@ void Map::randomize(){
     this->update_all_sprites();
 }
 
-void Map::add_road(int i, int j){
-    if (this->tile_types[i][j] == GRASS){
-        this->tile_types[i][j] = ROAD;
-        this->update_sprites(i-1, i+1, j-1, j+1);
-    }
-    else{ // TODO : gérer l'erreur
-        std::cout << "cannot build road here (no grass) " << this->tile_types[i][j] << std::endl;;
-    }
-}
-
-
 /******************************************************************************/
 
 void Map::set_type(int i, int j, int type){
@@ -356,6 +359,7 @@ void Map::update_all_sprites(){
     update_sprites(0,  MAP_SIZE-1, 0, MAP_SIZE-1);
 }
 
+/* redessine tous les sprites sur big_map puis blit le tout sur l'écran */
 void Map::blit_to_screen(){
     big_map->clear();
     for(int i = 0; i < MAP_SIZE; i++){
@@ -366,4 +370,90 @@ void Map::blit_to_screen(){
         }
     }
     s->blit_screen(big_map, NULL, &visible_area);
+    s->blit_screen(map_overlay, NULL, &visible_area);
+}
+
+
+void Map::handle_mouse_motion(int i, int j){
+    if (i < MAP_SIZE && i >= 0 && j < MAP_SIZE && j >= 0){
+        if (this->build_mode != NO_BUILDING){
+            // cas spéciaux
+            if (this->build_mode == EMPTY){
+                return;
+            }
+            if (this->build_mode == FISH1){
+                return;
+            }
+            map_overlay->clear(true);
+            // taille du bâtiment
+            int size = tile_size(this->build_mode);
+            // vérifier construction possible (toutes tuiles herbes)
+            for(int n_i = i; n_i > i-size; n_i--){
+                for(int n_j = j; n_j > j-size; n_j--){
+                    if (this->tile_types[n_i][n_j] != GRASS){
+                        //cannot build here
+                        return;
+                    }
+                }
+            }
+            // les colorier en vert (par dessus)
+            int x, y;
+            for(int n_i = i-size+1; n_i <= i; n_i++){
+                for(int n_j = j-size+1; n_j <= j; n_j++){
+                    convertir(n_i, n_j, &x, &y);
+                    this->building_tile->move(x, y);
+                    this->building_tile->blit(map_overlay);
+                }
+            }
+        }
+    }
+}
+
+void Map::handle_mouse_click(int i, int j){
+    if (i < MAP_SIZE && i >= 0 && j < MAP_SIZE && j >= 0){
+        if (this->build_mode != NO_BUILDING){
+            // cas spéciaux
+            if (this->build_mode == EMPTY){
+                return;
+            }
+            if (this->build_mode == ROAD){
+                if (this->tile_types[i][j] == GRASS){
+                    this->tile_types[i][j] = ROAD;
+                    //this->update_sprites(i-1, i+1, j-1, j+1);
+                    // TODO: update road
+                }
+                else{ // TODO : gérer l'erreur
+                    std::cout << "cannot build road here (no grass) " << this->tile_types[i][j] << std::endl;;
+                }
+            }
+            if (this->build_mode == FISH1){
+                return;
+            }
+            map_overlay->clear(true);
+            // taille du batiment
+            int size = tile_size(this->build_mode);
+            // vérifier construction possible
+            for(int n_i = i; n_i > i-size; n_i--){
+                for(int n_j = j; n_j > j-size; n_j--){
+                    if (this->tile_types[n_i][n_j] != GRASS){
+                        std::cout << "cannot build here\n";
+                        return;
+                    }
+                }
+            }
+            // si oui :
+                Building *b = create_new_building(this->build_mode, i, j);
+                this->add_to_map(b);
+                this->build_mode = NO_BUILDING;
+            // si non :
+                // message erreur
+        }
+    }
+}
+
+Building* Map::get_building_link(int i, int j){
+    if (i < MAP_SIZE && i >= 0 && j < MAP_SIZE && j >= 0){
+        return this->building_links[i][j];
+    }
+    return NULL;
 }

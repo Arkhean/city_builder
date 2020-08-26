@@ -22,21 +22,6 @@ int main(int argc, char * argv[]){
     Map m(&s);
     m.randomize();
 
-    /* buildings */
-    std::vector<Building*> buildings;
-
-    buildings.push_back(new Building(MARKET, 1, 5));
-    buildings.push_back(new Building(PREFET, 1, 1));
-    for(size_t i = 0; i < buildings.size(); i++){
-        m.add_to_map(buildings[i], i);
-    }
-
-    m.add_road(1, 2);
-    m.add_road(2, 2);
-    m.add_road(2, 3);
-    m.add_road(3, 2);
-    m.add_road(9, 10);
-
     /* menu */
     Menu menu(&s);
     menu.blit();
@@ -74,9 +59,7 @@ int main(int argc, char * argv[]){
     }
 
     /* libération */
-    for(Building *b : buildings){
-        delete b;
-    }
+    clear_all_buildings();
     free_all_textures();
     quit_SDL_TTF();
     return 0;

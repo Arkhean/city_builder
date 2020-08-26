@@ -9,15 +9,20 @@
 #define TILE_WIDTH 58
 #define TILE_HEIGHT 30
 
+#define NO_BUILDING -1
+
 class Map {
     private:
         Sprite *tile_sprites[MAP_SIZE][MAP_SIZE];
+        Sprite *building_tile;
         int tile_types[MAP_SIZE][MAP_SIZE];
         // position dans la liste des bâtiments (pour sauvegarde et gestion au clic)
-        int building_index[MAP_SIZE][MAP_SIZE];
+        Building* building_links[MAP_SIZE][MAP_SIZE];
         Texture *big_map;
+        Texture *map_overlay;
         Screen *s;
         SDL_Rect visible_area;
+        int build_mode;
         int get_water_tile(int i, int j);
         int determine_sprite(int i, int j);
         int get_road_tile(int i, int j);
@@ -30,7 +35,7 @@ class Map {
         Map& operator=(Map const &) = delete;
         void update_all_sprites();
         void blit_to_screen();
-        void add_to_map(Building *building, int index);
+        void add_to_map(Building *building);
         ~Map();
         int get_dx(){return this->visible_area.x;}
         int get_dy(){return this->visible_area.y;}
@@ -39,8 +44,11 @@ class Map {
         int save(std::string path);
         int load(std::string path);
         void randomize();
-        int get_building_index(int i, int j){ return this->building_index[i][j]; }
+        Building* get_building_link(int i, int j);
         void add_road(int i, int j);
+        void handle_mouse_motion(int i, int j);
+        void handle_mouse_click(int i, int j);
+        void set_build_mode(int mode) { this->build_mode=mode; }
 };
 
 void localiser(int x, int y, int *i, int *j);

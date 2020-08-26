@@ -166,7 +166,7 @@ bool Menu::mouse_motion(int x, int y){
 }
 
 // return if event was handled
-bool Menu::mouse_click(int x, int y){
+bool Menu::mouse_click(int x, int y, Map *m){
     bool event_handled = false;
     /* boutons de gauche */
     for(int i = 0; i < NB_BUTTONS; i++){
@@ -176,7 +176,8 @@ bool Menu::mouse_click(int x, int y){
                 menu_state = i - 2; // correpond à l'enum de menu_states
             }
             else {
-                std::cout << buttons[i]->value_on_click << std::endl;
+                m->set_build_mode(buttons[i]->value_on_click);
+                menu_state = NONE;
             }
             event_handled = true;
         }
@@ -189,11 +190,11 @@ bool Menu::mouse_click(int x, int y){
         for(Button_text* b : sub_menu_entries[menu_state-1]){
             if (b->is_inside(x, y)){
                 event_handled = true;
-                std::cout << b->value_on_click << std::endl;
+                m->set_build_mode(b->value_on_click);
+                menu_state = NONE;
             }
         }
     }
-    menu_state = NONE;
     return event_handled;
 }
 
