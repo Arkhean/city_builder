@@ -26,7 +26,7 @@ int tile_size(int type){
             return 3;
         case COLISEUM:
         case SENATE:
-            return 4;
+            return 5;
         default:
             return 2;
     }

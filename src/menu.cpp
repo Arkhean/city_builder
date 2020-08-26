@@ -173,7 +173,15 @@ bool Menu::mouse_click(int x, int y, Map *m){
         if (buttons[i]->is_inside(x, y)){
             buttons[i]->set_state(CLICKED);
             if (i > 2) { // les 3 premiers n'ouvrent pas de sous menu
-                menu_state = i - 2; // correpond à l'enum de menu_states
+                if (menu_state == (i - 2)){
+                    // le sous menu était déjà ouvert, donc on la ferme
+                    menu_state = NONE;
+                }
+                else{
+                    menu_state = i - 2; // correpond à l'enum de menu_states
+                }
+                // ouvrir un sous menu enlève le mode construction sur la carte
+                m->set_build_mode(NO_BUILDING);
             }
             else {
                 m->set_build_mode(buttons[i]->value_on_click);

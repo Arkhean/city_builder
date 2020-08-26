@@ -59,12 +59,18 @@ void interactions(SDL_Event event, bool &attendre, Map *m, Menu *menu){
             break;
         case SDL_MOUSEBUTTONDOWN :
             //on a cliqué
-            x = event.button.x;
-            y = event.button.y;
-            if (!menu->mouse_click(x, y, m)){
-                // click on the map
-                localiser(x+m->get_dx(), y+m->get_dy(), &i, &j);
-                m->handle_mouse_click(i, j);
+            if (event.button.button == SDL_BUTTON_RIGHT){
+                m->set_build_mode(NO_BUILDING);
+                menu->set_menu_state(NONE);
+            }
+            else{
+                x = event.button.x;
+                y = event.button.y;
+                if (!menu->mouse_click(x, y, m)){
+                    // click on the map
+                    localiser(x+m->get_dx(), y+m->get_dy(), &i, &j);
+                    m->handle_mouse_click(i, j);
+                }
             }
             break;
     }

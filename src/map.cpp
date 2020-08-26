@@ -84,34 +84,6 @@ Map::~Map(){
     delete building_tile;
 }
 
-void Map::add_to_map(Building *building){
-    /* first step : check the area */
-    int size = tile_size(building->type);
-    for(int i = building->i; i > building->i-size; i--){
-        for(int j = building->j; j > building->j-size; j--){
-            if (this->tile_types[i][j] != GRASS){
-                std::cout << "cannot build here\n";
-                return;
-            }
-        }
-    }
-    /* second step : clear the area */
-    for(int i = building->i; i > building->i-size; i--){
-        for(int j = building->j; j > building->j-size; j--){
-            this->tile_types[i][j] = EMPTY;
-            delete this->tile_sprites[i][j];
-            this->tile_sprites[i][j] = NULL;
-            this->building_links[i][j] = building;
-        }
-    }
-    /* then : add the new sprite and fix its position */
-    this->tile_types[building->i][building->j] = building->type;
-    int x, y;
-    convertir(building->i, building->j, &x, &y);
-    this->tile_sprites[building->i][building->j] = new Sprite(building->type,
-                                                x, y, tile_size(building->type));
-}
-
 void Map::translate(int dx, int dy){
     visible_area.x += dx;
     visible_area.y += dy;
@@ -189,6 +161,21 @@ int Map::get_road_tile(int i, int j){
     return res[r]-1;
 }
 
+int Map::get_empty_tile(int i, int j){
+    int di[] = {0, -1, 0, 1};
+    int dj[] = {-1, 0, 1, 0};
+    int r = 0, d = 1;
+    int res[] = {308, 310, 309, 310, 308, 310, 308, 311,
+                308, 310, 309, 311, 308, 310, 309, 311};
+    for(int k = 0; k < 4; k++){
+        if (i+di[k] < MAP_SIZE && i+di[k] >= 0 && j+dj[k] < MAP_SIZE && j+dj[k] >= 0){
+            r += (d * (this->tile_types[i+di[k]][j+dj[k]] == EMPTY));
+        }
+        d *= 2;
+    }
+    return res[r]-1;
+}
+
 int Map::determine_sprite(int i, int j){
     int r;
     switch (this->tile_types[i][j]) {
@@ -207,7 +194,7 @@ int Map::determine_sprite(int i, int j){
         case ROAD:
             return this->get_road_tile(i, j);
         case EMPTY:
-            return 0;
+            return this->get_empty_tile(i, j);
         default:
             return this->tile_types[i][j]; // le type du bâtiments;
     }
@@ -409,44 +396,87 @@ void Map::handle_mouse_motion(int i, int j){
     }
 }
 
+/******************************************************************************/
+/* méthode pour construire sur la map */
+void Map::add_building(int i, int j){
+    // taille du batiment
+    int size = tile_size(this->build_mode);
+    // vérifier construction possible
+    for(int n_i = i; n_i > i-size; n_i--){
+        for(int n_j = j; n_j > j-size; n_j--){
+            if (this->tile_types[n_i][n_j] != GRASS){
+                std::cout << "cannot build here\n";
+                return;
+            }
+        }
+    }
+    /* second step : clear the area */
+    Building *building = create_new_building(this->build_mode, i, j);
+    for(int n_i = i; n_i > i-size; n_i--){
+        for(int n_j = j; n_j > j-size; n_j--){
+            this->tile_types[n_i][n_j] = EMPTY;
+            delete this->tile_sprites[n_i][n_j];
+            this->tile_sprites[n_i][n_j] = NULL;
+            this->building_links[n_i][n_j] = building;
+        }
+    }
+    /* then : add the new sprite and fix its position */
+    this->tile_types[i][j] = building->type;
+    this->update_sprite(i, j);
+}
+
+void Map::clean(int i, int j){
+    if (this->tile_types[i][j] == TREE){
+        this->set_type(i, j, GRASS);
+        this->update_sprite(i, j);
+    }
+}
+
+void Map::add_road(int i, int j){
+    if (this->tile_types[i][j] == GRASS){
+        this->set_type(i, j, ROAD);
+        this->update_sprite(i, j);
+        int di[] = {0, -1, 0, 1};
+        int dj[] = {-1, 0, 1, 0};
+        for(int k = 0; k < 4; k++){
+            if (i+di[k] < MAP_SIZE && i+di[k] >= 0 && j+dj[k] < MAP_SIZE && j+dj[k] >= 0){
+                if (this->tile_types[i+di[k]][j+dj[k]] == ROAD){
+                    this->update_sprite(i+di[k], j+dj[k]);
+                }
+            }
+        }
+    }
+    else{ // TODO : gérer l'erreur
+        std::cout << "cannot build road here (no grass) " << this->tile_types[i][j] << std::endl;;
+    }
+}
+
+void Map::add_fishery(int i, int j){
+
+}
+
+
 void Map::handle_mouse_click(int i, int j){
     if (i < MAP_SIZE && i >= 0 && j < MAP_SIZE && j >= 0){
-        if (this->build_mode != NO_BUILDING){
-            // cas spéciaux
-            if (this->build_mode == EMPTY){
+        map_overlay->clear(true);
+        switch (this->build_mode) {
+            case NO_BUILDING:
                 return;
-            }
-            if (this->build_mode == ROAD){
-                if (this->tile_types[i][j] == GRASS){
-                    this->tile_types[i][j] = ROAD;
-                    //this->update_sprites(i-1, i+1, j-1, j+1);
-                    // TODO: update road
-                }
-                else{ // TODO : gérer l'erreur
-                    std::cout << "cannot build road here (no grass) " << this->tile_types[i][j] << std::endl;;
-                }
-            }
-            if (this->build_mode == FISH1){
-                return;
-            }
-            map_overlay->clear(true);
-            // taille du batiment
-            int size = tile_size(this->build_mode);
-            // vérifier construction possible
-            for(int n_i = i; n_i > i-size; n_i--){
-                for(int n_j = j; n_j > j-size; n_j--){
-                    if (this->tile_types[n_i][n_j] != GRASS){
-                        std::cout << "cannot build here\n";
-                        return;
-                    }
-                }
-            }
-            // si oui :
-                Building *b = create_new_building(this->build_mode, i, j);
-                this->add_to_map(b);
-                this->build_mode = NO_BUILDING;
-            // si non :
-                // message erreur
+            case EMPTY:
+                // supprimer des arbres
+                this->clean(i, j);
+                break;
+            case ROAD:
+                this->add_road(i, j);
+                break;
+            case FISH1:
+                // cas compliqué (position côte...)
+                this->add_fishery(i, j);
+                break;
+            default:
+                // cas simple
+                this->add_building(i, j);
+                break;
         }
     }
 }

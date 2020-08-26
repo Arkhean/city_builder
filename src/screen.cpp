@@ -130,7 +130,7 @@ Texture::Texture(Screen * s, std::string str, SDL_Color color){
         if (this->text == NULL){std::cout << "error converting" << std::endl;}
     }
     else if (str.length() > 0){
-        this->surface = TTF_RenderText_Blended(police, str.c_str(), color);
+        this->surface = TTF_RenderUTF8_Blended(police, str.c_str(), color);
         this->text = SDL_CreateTextureFromSurface(s->get_rend(), this->surface);
         initRect(this->cadre, 0, 0, surface->w, surface->h);
     }
