@@ -3,17 +3,20 @@
 
 #include "map.hpp"
 
+int get_map_width(){
+    return (MAP_SIZE*TILE_WIDTH+(2*MAP_SIZE-1));
+}
+
 void convertir(int i, int j, int *x, int *y){  // de matrice vers écran
-    int w = MAP_SIZE*TILE_WIDTH/2 - 29;
-    *x = w-(i-j)*29 - i + MAP_SIZE;
-    *y = (i+j)*15;
+    int w = get_map_width()/2 - HALF_TILE_WIDTH;
+    *x = w-(i-j)*HALF_TILE_WIDTH;
+    *y = (i+j)*HALF_TILE_HEIGHT;
 }
 
 void localiser(int x, int y, int *i, int *j){	// écran vers matrice
-    int w = MAP_SIZE*TILE_WIDTH/2;
-    x = x - MAP_SIZE;
-    *i = (29*y-15*x+15*w)/870;
-    *j = (29*y+15*x-15*w)/870;
+    int w = get_map_width()/2;// - HALF_TILE_WIDTH;
+    *i = (2*y - x + w) / 60;
+    *j = (2*y - w + x) / 60;
 }
 
 /******************************************************************************/
@@ -58,8 +61,8 @@ Map::Map(Screen *s): s(s), visible_area({0,0,1600,900}), build_mode(NO_BUILDING)
     /* initialize random seed: */
     srand (time(NULL));
     /* initialize map texture */
-    this->big_map = new Texture(s, MAP_SIZE*TILE_WIDTH+MAP_SIZE, MAP_SIZE*TILE_HEIGHT);
-    this->map_overlay = new Texture(s, MAP_SIZE*TILE_WIDTH+MAP_SIZE, MAP_SIZE*TILE_HEIGHT);
+    this->big_map = new Texture(s, get_map_width(), MAP_SIZE*TILE_HEIGHT);
+    this->map_overlay = new Texture(s, get_map_width(), MAP_SIZE*TILE_HEIGHT);
     this->map_overlay->clear(true);
     this->building_tile = new Sprite(343, 0, 0);
     /* fill the map */
@@ -398,6 +401,21 @@ void Map::handle_mouse_motion(int i, int j){
 
 /******************************************************************************/
 /* méthode pour construire sur la map */
+
+void Map::set_build_mode(int mode) {
+    if (this->build_mode == EMPTY){
+        // si on était en mode clean, on remet la flèche
+        system_set_cursor(CURSOR_ARROW);
+    }
+    this->build_mode=mode;
+    this->map_overlay->clear(true);
+    if (mode == EMPTY){
+        // si on passe en mode clean, on met la pelle
+        system_set_cursor(CURSOR_SHOVEL);
+    }
+ }
+
+
 void Map::add_building(int i, int j){
     // taille du batiment
     int size = tile_size(this->build_mode);

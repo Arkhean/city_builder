@@ -4,10 +4,13 @@
 #include "screen.hpp"
 #include "sprite.hpp"
 #include "building.hpp"
+#include "cursor.hpp"
 
-#define MAP_SIZE 32
+#define MAP_SIZE 64
 #define TILE_WIDTH 58
+#define HALF_TILE_WIDTH 30
 #define TILE_HEIGHT 30
+#define HALF_TILE_HEIGHT 15
 
 #define NO_BUILDING -1
 
@@ -51,7 +54,7 @@ class Map {
         Building* get_building_link(int i, int j);
         void handle_mouse_motion(int i, int j);
         void handle_mouse_click(int i, int j);
-        void set_build_mode(int mode) { this->build_mode=mode; this->map_overlay->clear(true); }
+        void set_build_mode(int mode);
 
 };
 

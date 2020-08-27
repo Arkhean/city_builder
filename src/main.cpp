@@ -9,10 +9,13 @@
 #include "menu.hpp"
 #include "interactions.hpp"
 #include "timer.hpp"
+#include "cursor.hpp"
 
 int main(int argc, char * argv[]){
     /* initialisation */
     init_SDL_TTF();
+    init_cursors();
+    system_set_cursor(CURSOR_ARROW);
     /* window */
     Screen s(1600, 900);
     /* textures */
@@ -39,7 +42,7 @@ int main(int argc, char * argv[]){
     fpsTimer.start();
 
     while(attendre){
-        SDL_Delay(20);
+        //SDL_Delay(20);
         //Calculate and correct fps
         float avgFPS = countedFrames / ( fpsTimer.getTicks() / 1000.f );
         if( avgFPS > 2000000 ) {

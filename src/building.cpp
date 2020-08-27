@@ -14,6 +14,7 @@ int tile_size(int type){
         case ROAD:
         case WHEAT_FIELD:
         case VEGETABLE_FIELD:
+        case OLIVE_GROVE:
         case ORCHARD:
         case VINE:
         case CATTLE_PEN:
