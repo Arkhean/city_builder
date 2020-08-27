@@ -6,7 +6,7 @@
 #include "building.hpp"
 #include "cursor.hpp"
 
-#define MAP_SIZE 64
+#define MAP_SIZE 32
 #define TILE_WIDTH 58
 #define HALF_TILE_WIDTH 30
 #define TILE_HEIGHT 30
@@ -37,6 +37,8 @@ class Map {
         void clean(int i, int j);
         void add_road(int i, int j);
         void add_fishery(int i, int j);
+        void add_warehouse(int i, int j);
+        bool is_visible(int i, int j);
     public:
         Map(Screen *s); // require load_all_textures
         Map(Map const &) = delete;
@@ -55,7 +57,8 @@ class Map {
         void handle_mouse_motion(int i, int j);
         void handle_mouse_click(int i, int j);
         void set_build_mode(int mode);
-
+        bool is_accessible(int i, int j){ return tile_types[i][j] == GRASS; }
+        bool is_road(int i, int j) { return tile_types[i][j] == ROAD; };
 };
 
 void localiser(int x, int y, int *i, int *j);

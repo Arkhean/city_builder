@@ -4,6 +4,28 @@
 #include "screen.hpp"
 #include "sprite.hpp"
 
+enum services {
+    MARKET_ACCESS,
+    SCHOOL_ACCESS,
+    UNIVERSITY_ACCESS,
+    THEATRE_ACCESS,
+    COLISEUM_ACCESS,
+    BARBER_ACCESS,
+    DOCTOR_ACCESS,
+    THERME_ACCESS,
+    HOSPITAL_ACCESS,
+    TEMPLE_CERES_ACCESS,
+    TEMPLE_MARS_ACCESS,
+    TEMPLE_VENUS_ACCESS,
+    TEMPLE_MERCURE_ACCESS,
+    TEMPLE_NEPTUNE_ACCESS,
+    ORACLE_ACCESS,
+    WELL_ACCESS,
+    FOUNTAIN_ACCESS,
+    WAREHOUSE_ACCESS,
+    SERVICE_NUMBER };
+
+
 int tile_size(int type);
 
 /* affichage du sprite */
@@ -17,6 +39,7 @@ class Building {
         const std::string name;
         const int maintenance_cost;
         Building(int type, int i, int j);
+        void has_been_built();
 };
 
 /* bâtiments pourvoyant un service au rue alentour */
@@ -59,7 +82,7 @@ class House : public Building {
 #include <vector>
 
 Building * create_new_building(int type, int i, int j);
+void remove_building(Building *b);
 void clear_all_buildings();
-
 
 #endif

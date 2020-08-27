@@ -1,4 +1,5 @@
 #include "sprite.hpp"
+#include "map.hpp"
 
 std::string names[] = {
     "Marché",
@@ -27,15 +28,15 @@ Sprite::Sprite(int texture_number, int x, int y, int size)
     : texture_number(texture_number) {
     int w = textures[texture_number]->get_width();
     int h = textures[texture_number]->get_height();
-    this->pos.x = x + 58+(size-1)*29 - w;
-    this->pos.y = y + 30 - h;
+    this->pos.x = x + TILE_WIDTH+(size-1)*HALF_TILE_WIDTH - w;
+    this->pos.y = y + TILE_HEIGHT - h;
     this->pos.w = w;
     this->pos.h = h;
 }
 
 void Sprite::move(int x, int y, int size){
-    this->pos.x = x + 58+(size-1)*29 - this->pos.w;
-    this->pos.y = y + 30 - this->pos.h;
+    this->pos.x = x + TILE_WIDTH+(size-1)*HALF_TILE_WIDTH - this->pos.w;
+    this->pos.y = y + TILE_HEIGHT - this->pos.h;
 }
 
 void Sprite::blit(Texture *target){

@@ -106,6 +106,13 @@ void Map::translate(int dx, int dy){
     }
 }
 
+bool Map::is_visible(int i, int j){
+    int x, y;
+    convertir(i, j, &x, &y);
+    return x+TILE_WIDTH >= visible_area.x && x < visible_area.x+visible_area.w
+        && y+TILE_HEIGHT >= visible_area.y && y < visible_area.y+visible_area.h;
+}
+
 int Map::get_water_tile(int i, int j){
     int res[] = { 199, 199, 167, 167, 199, 199, 167, 167, 164, 164,				//0
 			198, 198, 164, 164, 156, 156, 199, 199, 167, 167,				//1
@@ -352,17 +359,19 @@ void Map::update_all_sprites(){
 /* redessine tous les sprites sur big_map puis blit le tout sur l'écran */
 void Map::blit_to_screen(){
     big_map->clear();
+    // optimisation : trouver imin/imax/jmin/jmax avant ??
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
             if (this->tile_sprites[i][j] != NULL){
-                this->tile_sprites[i][j]->blit(big_map);
+                if (is_visible(i, j)){
+                    this->tile_sprites[i][j]->blit(big_map);
+                }
             }
         }
     }
     s->blit_screen(big_map, NULL, &visible_area);
     s->blit_screen(map_overlay, NULL, &visible_area);
 }
-
 
 void Map::handle_mouse_motion(int i, int j){
     if (i < MAP_SIZE && i >= 0 && j < MAP_SIZE && j >= 0){
@@ -374,6 +383,7 @@ void Map::handle_mouse_motion(int i, int j){
             if (this->build_mode == FISH1){
                 return;
             }
+            // TODO case road
             map_overlay->clear(true);
             // taille du bâtiment
             int size = tile_size(this->build_mode);
@@ -441,12 +451,25 @@ void Map::add_building(int i, int j){
     /* then : add the new sprite and fix its position */
     this->tile_types[i][j] = building->type;
     this->update_sprite(i, j);
+    building->has_been_built();
 }
 
 void Map::clean(int i, int j){
     if (this->tile_types[i][j] == TREE){
         this->set_type(i, j, GRASS);
         this->update_sprite(i, j);
+    }
+    else if (this->building_links[i][j] != NULL){
+        Building * b = this->building_links[i][j];
+        int size = tile_size(b->type);
+        for(int n_i = b->i; n_i > b->i-size; n_i--){
+            for(int n_j = b->j; n_j > b->j-size; n_j--){
+                this->set_type(n_i, n_j, GRASS);
+                this->building_links[n_i][n_j] = NULL;
+                this->update_sprite(n_i, n_j);
+            }
+        }
+        remove_building(b);
     }
 }
 
@@ -470,7 +493,11 @@ void Map::add_road(int i, int j){
 }
 
 void Map::add_fishery(int i, int j){
+    // TODO
+}
 
+void Map::add_warehouse(int i, int j){
+    // TODO
 }
 
 
@@ -490,6 +517,10 @@ void Map::handle_mouse_click(int i, int j){
             case FISH1:
                 // cas compliqué (position côte...)
                 this->add_fishery(i, j);
+                break;
+            case WAREHOUSE:
+                // cas compliqué
+                this->add_warehouse(i, j);
                 break;
             default:
                 // cas simple

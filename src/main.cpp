@@ -42,7 +42,7 @@ int main(int argc, char * argv[]){
     fpsTimer.start();
 
     while(attendre){
-        //SDL_Delay(20);
+        SDL_Delay(10);
         //Calculate and correct fps
         float avgFPS = countedFrames / ( fpsTimer.getTicks() / 1000.f );
         if( avgFPS > 2000000 ) {
