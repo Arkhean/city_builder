@@ -3,7 +3,7 @@
 
 #include "interactions.hpp"
 
-void interactions(SDL_Event event, bool &attendre, Map *m, Menu *menu){
+void interactions(SDL_Event event, bool &attendre, Menu *menu){
     const Uint8 *state;
     int d = 50;
     int i, j, x, y;
@@ -19,25 +19,25 @@ void interactions(SDL_Event event, bool &attendre, Map *m, Menu *menu){
                 attendre = false;
             }
             if (state[SDL_SCANCODE_UP]){
-                m->translate(0, -d);
+                map__translate(0, -d);
             }
             if (state[SDL_SCANCODE_RIGHT]){
-                m->translate(d, 0);
+                map__translate(d, 0);
             }
             if (state[SDL_SCANCODE_LEFT]){
-                m->translate(-d, 0);
+                map__translate(-d, 0);
             }
             if (state[SDL_SCANCODE_DOWN]){
-                m->translate(0, d);
+                map__translate(0, d);
             }
             if (state[SDL_SCANCODE_S]){
-                m->save("saves/save1.map");
+                map__save("saves/save1.map");
             }
             if (state[SDL_SCANCODE_L]){
-                m->load("saves/save1.map");
+                map__load("saves/save1.map");
             }
             if (state[SDL_SCANCODE_R]){
-                m->randomize();
+                map__randomize();
             }
             break;
         case SDL_MOUSEMOTION :
@@ -45,8 +45,8 @@ void interactions(SDL_Event event, bool &attendre, Map *m, Menu *menu){
             x = event.button.x;
             y = event.button.y;
             if (!menu->mouse_motion(x, y)){
-                localiser(x+m->get_dx(), y+m->get_dy(), &i, &j);
-                b = m->get_building_link(i, j);
+                map__localiser(x+map__get_dx(), y+map__get_dy(), &i, &j);
+                b = map__get_building_link(i, j);
                 if (b == NULL){
                     num_type = -1;
                 }
@@ -54,22 +54,22 @@ void interactions(SDL_Event event, bool &attendre, Map *m, Menu *menu){
                     num_type = b->type;
                 }
                 menu->update_position_indicator(i, j, num_type);
-                m->handle_mouse_motion(i, j);
+                map__handle_mouse_motion(i, j);
             }
             break;
         case SDL_MOUSEBUTTONDOWN :
             //on a cliqué
             if (event.button.button == SDL_BUTTON_RIGHT){
-                m->set_build_mode(NO_BUILDING);
+                map__set_build_mode(NO_BUILDING);
                 menu->set_menu_state(NONE);
             }
             else{
                 x = event.button.x;
                 y = event.button.y;
-                if (!menu->mouse_click(x, y, m)){
+                if (!menu->mouse_click(x, y)){
                     // click on the map
-                    localiser(x+m->get_dx(), y+m->get_dy(), &i, &j);
-                    m->handle_mouse_click(i, j);
+                    map__localiser(x+map__get_dx(), y+map__get_dy(), &i, &j);
+                    map__handle_mouse_click(i, j);
                 }
             }
             break;

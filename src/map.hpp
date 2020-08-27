@@ -1,5 +1,5 @@
-#ifndef MAP_H
-#define MAP_H
+#ifndef map__H
+#define map__H
 
 #include "screen.hpp"
 #include "sprite.hpp"
@@ -12,56 +12,28 @@
 #define TILE_HEIGHT 30
 #define HALF_TILE_HEIGHT 15
 
-#define NO_BUILDING -1
+#define NO_BUILDING -1 // pas de constuction en cours
 
-class Map {
-    private:
-        Sprite *tile_sprites[MAP_SIZE][MAP_SIZE];
-        Sprite *building_tile;
-        int tile_types[MAP_SIZE][MAP_SIZE];
-        // position dans la liste des bâtiments (pour sauvegarde et gestion au clic)
-        Building* building_links[MAP_SIZE][MAP_SIZE];
-        Texture *big_map;
-        Texture *map_overlay;
-        Screen *s;
-        SDL_Rect visible_area;
-        int build_mode;
-        int get_water_tile(int i, int j);
-        int determine_sprite(int i, int j);
-        int get_road_tile(int i, int j);
-        int get_empty_tile(int i, int j);
-        void set_type(int i, int j, int type);
-        void update_sprite(int i, int j);
-        void update_sprites(int start_i, int end_i, int start_j, int end_j);
-        void add_building(int i, int j);
-        void clean(int i, int j);
-        void add_road(int i, int j);
-        void add_fishery(int i, int j);
-        void add_warehouse(int i, int j);
-        bool is_visible(int i, int j);
-    public:
-        Map(Screen *s); // require load_all_textures
-        Map(Map const &) = delete;
-        Map& operator=(Map const &) = delete;
-        void update_all_sprites();
-        void blit_to_screen();
-        ~Map();
-        int get_dx(){return this->visible_area.x;}
-        int get_dy(){return this->visible_area.y;}
-        void translate(int dx, int dy);
-        void set_all_types(int new_tile_types[MAP_SIZE][MAP_SIZE]);
-        int save(std::string path);
-        int load(std::string path);
-        void randomize();
-        Building* get_building_link(int i, int j);
-        void handle_mouse_motion(int i, int j);
-        void handle_mouse_click(int i, int j);
-        void set_build_mode(int mode);
-        bool is_accessible(int i, int j){ return tile_types[i][j] == GRASS; }
-        bool is_road(int i, int j) { return tile_types[i][j] == ROAD; };
-};
 
-void localiser(int x, int y, int *i, int *j);
-void convertir(int i, int j, int *x, int *y);
+void map__localiser(int x, int y, int *i, int *j);
+void map__convertir(int i, int j, int *x, int *y);
+void map__init_map(Screen *s); // require load_all_textures
+void map__update_all_sprites();
+void map__blit_to_screen();
+void map__free_map();
+int map__get_dx();
+int map__get_dy();
+void map__translate(int dx, int dy);
+int map__save(std::string path);
+int map__load(std::string path);
+void map__randomize();
+Building* map__get_building_link(int i, int j);
+void map__handle_mouse_motion(int i, int j);
+void map__handle_mouse_click(int i, int j);
+void map__set_build_mode(int mode);
+bool map__is_accessible(int i, int j);
+bool map__is_road(int i, int j);
+
+
 
 #endif

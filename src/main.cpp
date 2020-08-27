@@ -22,16 +22,15 @@ int main(int argc, char * argv[]){
     load_all_textures(&s);
 
     /* map */
-    Map m(&s);
-    m.randomize();
+    map__init_map(&s);
+    map__randomize();
 
     /* menu */
     Menu menu(&s);
     menu.blit();
 
     /* all on screen */
-    m.update_all_sprites();
-    m.blit_to_screen();
+    map__blit_to_screen();
     s.update();
 
     SDL_Event event;
@@ -52,16 +51,17 @@ int main(int argc, char * argv[]){
 
         /* handle events */
         while(SDL_PollEvent(&event)){
-            interactions(event, attendre, &m, &menu);
+            interactions(event, attendre, &menu);
         }
         /* update screen */
-        m.blit_to_screen();
+        map__blit_to_screen();
         menu.blit();
         s.update();
         ++countedFrames;
     }
 
     /* libération */
+    map__free_map();
     clear_all_buildings();
     free_all_textures();
     quit_SDL_TTF();

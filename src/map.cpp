@@ -1,31 +1,26 @@
 #include <iostream>
 #include <fstream>
-
 #include "map.hpp"
 
-int get_map_width(){
-    return (MAP_SIZE*TILE_WIDTH+(2*MAP_SIZE-1));
-}
-
-void convertir(int i, int j, int *x, int *y){  // de matrice vers écran
-    int w = get_map_width()/2 - HALF_TILE_WIDTH;
-    *x = w-(i-j)*HALF_TILE_WIDTH;
-    *y = (i+j)*HALF_TILE_HEIGHT;
-}
-
-void localiser(int x, int y, int *i, int *j){	// écran vers matrice
-    int w = get_map_width()/2;// - HALF_TILE_WIDTH;
-    *i = (2*y - x + w) / 60;
-    *j = (2*y - w + x) / 60;
-}
+static Sprite *tile_sprites[MAP_SIZE][MAP_SIZE];
+static Sprite *building_tile;
+static int tile_types[MAP_SIZE][MAP_SIZE];
+// position dans la liste des bâtiments (pour sauvegarde et gestion au clic)
+static Building* building_links[MAP_SIZE][MAP_SIZE];
+static Texture *big_map;
+static Texture *map_overlay;
+static Screen *s;
+static SDL_Rect visible_area = {0, 0, 1600, 900};
+static int build_mode = NO_BUILDING;
 
 /******************************************************************************/
+/* private functions */
 
 int rand_between(int a, int b){
     return (rand() % (b-a)) + a;
 }
 
-int grassland_rand_number(){
+int map__grassland_rand_number(){
     int r = rand_between(61, 118 + (288-229));
     if (r > 118){
         r = 229 - 119 + r;
@@ -33,12 +28,11 @@ int grassland_rand_number(){
     return r;
 }
 
-int water_rand_number(){
+int map__water_rand_number(){
     return rand_between(119, 126);
 }
-// coastal : 127 - 199
 
-int tree_rand_number(){
+int map__tree_rand_number(){
     int r = rand_between(9, 16 + (60-29));
     if (r > 16){
         r = 29 - 17 + r;
@@ -46,74 +40,11 @@ int tree_rand_number(){
     return r;
 }
 
-int fertil_rand_number(){
-    return rand_between(17, 28);
-}
-
-int rock_rand_number(){
+int map__rock_rand_number(){
     return rand_between(289, 296);
 }
 
-/******************************************************************************/
-
-
-Map::Map(Screen *s): s(s), visible_area({0,0,1600,900}), build_mode(NO_BUILDING) {
-    /* initialize random seed: */
-    srand (time(NULL));
-    /* initialize map texture */
-    this->big_map = new Texture(s, get_map_width(), MAP_SIZE*TILE_HEIGHT);
-    this->map_overlay = new Texture(s, get_map_width(), MAP_SIZE*TILE_HEIGHT);
-    this->map_overlay->clear(true);
-    this->building_tile = new Sprite(343, 0, 0);
-    /* fill the map */
-    for(int i = 0; i < MAP_SIZE; i++){
-        for(int j = 0; j < MAP_SIZE; j++){
-            this->tile_sprites[i][j] = NULL;
-            this->tile_types[i][j] = GRASS;
-            this->building_links[i][j] = NULL;
-        }
-    }
-    this->update_all_sprites();
-}
-
-Map::~Map(){
-    delete this->big_map;
-    delete this->map_overlay;
-    for(int i = 0; i < MAP_SIZE; i++){
-        for(int j = 0; j < MAP_SIZE; j++){
-            delete this->tile_sprites[i][j];
-        }
-    }
-    delete building_tile;
-}
-
-void Map::translate(int dx, int dy){
-    visible_area.x += dx;
-    visible_area.y += dy;
-    int w = this->big_map->get_width();
-    int h = this->big_map->get_height();
-    if (visible_area.x > w - s->get_width()){
-        visible_area.x = w - s->get_width();
-    }
-    if (visible_area.y > h - s->get_height()){
-        visible_area.y = h - s->get_height();
-    }
-    if (visible_area.x < 0){
-        visible_area.x = 0;
-    }
-    if (visible_area.y < 0){
-        visible_area.y = 0;
-    }
-}
-
-bool Map::is_visible(int i, int j){
-    int x, y;
-    convertir(i, j, &x, &y);
-    return x+TILE_WIDTH >= visible_area.x && x < visible_area.x+visible_area.w
-        && y+TILE_HEIGHT >= visible_area.y && y < visible_area.y+visible_area.h;
-}
-
-int Map::get_water_tile(int i, int j){
+int map__get_water_tile(int i, int j){
     int res[] = { 199, 199, 167, 167, 199, 199, 167, 167, 164, 164,				//0
 			198, 198, 164, 164, 156, 156, 199, 199, 167, 167,				//1
 			199, 199, 167, 167, 164, 164, 198, 198, 164, 164,					//2
@@ -145,7 +76,7 @@ int Map::get_water_tile(int i, int j){
     int dj[] = {-1,-1,-1,0,1,1,1,0};
 	for(int k = 0; k < 8; k++){
         if (i+di[k] < MAP_SIZE && i+di[k] >= 0 && j+dj[k] < MAP_SIZE && j+dj[k] >= 0){
-            r += (d * (this->tile_types[i+di[k]][j+dj[k]] == WATER));
+            r += (d * (tile_types[i+di[k]][j+dj[k]] == WATER));
         }
         else{
             // les bords comptent comme de l'eau
@@ -156,7 +87,7 @@ int Map::get_water_tile(int i, int j){
     return res[r]-1;
 }
 
-int Map::get_road_tile(int i, int j){
+int map__get_road_tile(int i, int j){
     int di[] = {0, -1, 0, 1};
     int dj[] = {-1, 0, 1, 0};
     int r = 0, d = 1;
@@ -164,14 +95,14 @@ int Map::get_road_tile(int i, int j){
                 406, 402, 398, 411, 401, 410, 409, 413};
     for(int k = 0; k < 4; k++){
         if (i+di[k] < MAP_SIZE && i+di[k] >= 0 && j+dj[k] < MAP_SIZE && j+dj[k] >= 0){
-            r += (d * (this->tile_types[i+di[k]][j+dj[k]] == ROAD));
+            r += (d * (tile_types[i+di[k]][j+dj[k]] == ROAD));
         }
         d *= 2;
     }
     return res[r]-1;
 }
 
-int Map::get_empty_tile(int i, int j){
+int map__get_empty_tile(int i, int j){
     int di[] = {0, -1, 0, 1};
     int dj[] = {-1, 0, 1, 0};
     int r = 0, d = 1;
@@ -179,44 +110,169 @@ int Map::get_empty_tile(int i, int j){
                 308, 310, 309, 311, 308, 310, 309, 311};
     for(int k = 0; k < 4; k++){
         if (i+di[k] < MAP_SIZE && i+di[k] >= 0 && j+dj[k] < MAP_SIZE && j+dj[k] >= 0){
-            r += (d * (this->tile_types[i+di[k]][j+dj[k]] == EMPTY));
+            r += (d * (tile_types[i+di[k]][j+dj[k]] == EMPTY));
         }
         d *= 2;
     }
     return res[r]-1;
 }
 
-int Map::determine_sprite(int i, int j){
+int map__determine_sprite(int i, int j){
     int r;
-    switch (this->tile_types[i][j]) {
+    switch (tile_types[i][j]) {
         case GRASS:
-            return grassland_rand_number();
+            return map__grassland_rand_number();
         case TREE:
-            return tree_rand_number();
+            return map__tree_rand_number();
         case WATER:
-            r = this->get_water_tile(i, j);
+            r = map__get_water_tile(i, j);
             if (r < 0){
-                return water_rand_number();
+                return map__water_rand_number();
             }
             return r;
         case ROCK:
-            return rock_rand_number();
+            return map__rock_rand_number();
         case ROAD:
-            return this->get_road_tile(i, j);
+            return map__get_road_tile(i, j);
         case EMPTY:
-            return this->get_empty_tile(i, j);
+            return map__get_empty_tile(i, j);
         default:
-            return this->tile_types[i][j]; // le type du bâtiments;
+            return tile_types[i][j]; // le type du bâtiments;
     }
 }
 
-int Map::save(std::string path){
+void map__set_type(int i, int j, int type){
+    tile_types[i][j] = type;
+}
+
+// attention : les types des cases adjacentes doivent être à jour !
+void map__update_sprite(int i, int j){
+    if (tile_sprites[i][j] != NULL){
+        delete tile_sprites[i][j];
+    }
+    int x,y;
+    map__convertir(i, j, &x, &y);
+    tile_sprites[i][j] = new Sprite(map__determine_sprite(i, j), x, y, tile_size(tile_types[i][j]));
+}
+
+void map__set_all_types(int new_tile_types[MAP_SIZE][MAP_SIZE]){
+    for(int i = 0; i < MAP_SIZE; i++){
+        for(int j = 0; j < MAP_SIZE; j++){
+            tile_types[i][j] = new_tile_types[i][j];
+        }
+    }
+}
+
+void map__update_sprites(int start_i, int end_i, int start_j, int end_j){
+    for(int i = start_i; i <= end_i; i++){
+        for(int j = start_j; j <= end_j; j++){
+            map__update_sprite(i, j);
+        }
+    }
+}
+
+void map__update_all_sprites(){
+    map__update_sprites(0,  MAP_SIZE-1, 0, MAP_SIZE-1);
+}
+
+/******************************************************************************/
+/* public functions */
+int map__get_width(){
+    return (MAP_SIZE*TILE_WIDTH+(2*MAP_SIZE-1));
+}
+
+void map__convertir(int i, int j, int *x, int *y){  // de matrice vers écran
+    int w = map__get_width()/2 - HALF_TILE_WIDTH;
+    *x = w-(i-j)*HALF_TILE_WIDTH;
+    *y = (i+j)*HALF_TILE_HEIGHT;
+}
+
+void map__localiser(int x, int y, int *i, int *j){	// écran vers matrice
+    int w = map__get_width()/2;
+    *i = (2*y - x + w) / 60;
+    *j = (2*y - w + x) / 60;
+}
+
+void map__init_map(Screen *screen){
+    s = screen;
+    /* initialize random seed: */
+    srand (time(NULL));
+    /* initialize map texture */
+    big_map = new Texture(s, map__get_width(), MAP_SIZE*TILE_HEIGHT);
+    map_overlay = new Texture(s, map__get_width(), MAP_SIZE*TILE_HEIGHT);
+    map_overlay->clear(true);
+    building_tile = new Sprite(343, 0, 0);
+    /* fill the map */
+    for(int i = 0; i < MAP_SIZE; i++){
+        for(int j = 0; j < MAP_SIZE; j++){
+            tile_sprites[i][j] = NULL;
+            tile_types[i][j] = GRASS;
+            building_links[i][j] = NULL;
+        }
+    }
+    map__update_all_sprites();
+}
+
+void map__free_map(){
+    delete big_map;
+    delete map_overlay;
+    for(int i = 0; i < MAP_SIZE; i++){
+        for(int j = 0; j < MAP_SIZE; j++){
+            delete tile_sprites[i][j];
+        }
+    }
+    delete building_tile;
+}
+
+void map__translate(int dx, int dy){
+    visible_area.x += dx;
+    visible_area.y += dy;
+    int w = big_map->get_width();
+    int h = big_map->get_height();
+    if (visible_area.x > w - s->get_width()){
+        visible_area.x = w - s->get_width();
+    }
+    if (visible_area.y > h - s->get_height()){
+        visible_area.y = h - s->get_height();
+    }
+    if (visible_area.x < 0){
+        visible_area.x = 0;
+    }
+    if (visible_area.y < 0){
+        visible_area.y = 0;
+    }
+}
+
+bool map__is_visible(int i, int j){
+    int x, y;
+    map__convertir(i, j, &x, &y);
+    return x+TILE_WIDTH >= visible_area.x && x < visible_area.x+visible_area.w
+        && y+TILE_HEIGHT >= visible_area.y && y < visible_area.y+visible_area.h;
+}
+
+int map__get_dx(){
+    return visible_area.x;
+}
+
+int map__get_dy(){
+    return visible_area.y;
+}
+
+bool map__is_accessible(int i, int j){
+    return tile_types[i][j] == GRASS;
+}
+
+bool map__is_road(int i, int j) {
+    return tile_types[i][j] == ROAD;
+};
+
+int map__save(std::string path){
     std::cout << "saving to " << path << std::endl;
     std::ofstream myfile (path);
     if (myfile.is_open()){
         for(int i = 0; i < MAP_SIZE; i++){
             for(int j = 0; j < MAP_SIZE; j++){
-                myfile << this->tile_types[i][j] << "-";
+                myfile << tile_types[i][j] << "-";
             }
             myfile << "\n";
         }
@@ -229,7 +285,7 @@ int Map::save(std::string path){
     return 0;
 }
 
-int Map::load(std::string path){
+int map__load(std::string path){
     std::cout << "loading from " << path << std::endl;
     std::string line;
     std::ifstream myfile (path);
@@ -254,8 +310,8 @@ int Map::load(std::string path){
             }
         }
         myfile.close();
-        this->set_all_types(new_tile_types);
-        this->update_all_sprites();
+        map__set_all_types(new_tile_types);
+        map__update_all_sprites();
     }
     else{
         std::cout << "Unable to open file\n";
@@ -264,7 +320,7 @@ int Map::load(std::string path){
     return 0;
 }
 
-void Map::randomize(){
+void map__randomize(){
     int tiles[MAP_SIZE][MAP_SIZE] = { GRASS };
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
@@ -316,55 +372,19 @@ void Map::randomize(){
             }
         }
     }
-    this->set_all_types(tiles);
-    this->update_all_sprites();
-}
-
-/******************************************************************************/
-
-void Map::set_type(int i, int j, int type){
-    this->tile_types[i][j] = type;
-}
-
-void Map::set_all_types(int new_tile_types[MAP_SIZE][MAP_SIZE]){
-    for(int i = 0; i < MAP_SIZE; i++){
-        for(int j = 0; j < MAP_SIZE; j++){
-            this->tile_types[i][j] = new_tile_types[i][j];
-        }
-    }
-}
-
-// attention : les types des cases adjacentes doivent être à jour !
-void Map::update_sprite(int i, int j){
-    if (this->tile_sprites[i][j] != NULL){
-        delete this->tile_sprites[i][j];
-    }
-    int x,y;
-    convertir(i, j, &x, &y);
-    this->tile_sprites[i][j] = new Sprite(determine_sprite(i, j), x, y, tile_size(this->tile_types[i][j]));
-}
-
-void Map::update_sprites(int start_i, int end_i, int start_j, int end_j){
-    for(int i = start_i; i <= end_i; i++){
-        for(int j = start_j; j <= end_j; j++){
-            this->update_sprite(i, j);
-        }
-    }
-}
-
-void Map::update_all_sprites(){
-    update_sprites(0,  MAP_SIZE-1, 0, MAP_SIZE-1);
+    map__set_all_types(tiles);
+    map__update_all_sprites();
 }
 
 /* redessine tous les sprites sur big_map puis blit le tout sur l'écran */
-void Map::blit_to_screen(){
+void map__blit_to_screen(){
     big_map->clear();
     // optimisation : trouver imin/imax/jmin/jmax avant ??
     for(int i = 0; i < MAP_SIZE; i++){
         for(int j = 0; j < MAP_SIZE; j++){
-            if (this->tile_sprites[i][j] != NULL){
-                if (is_visible(i, j)){
-                    this->tile_sprites[i][j]->blit(big_map);
+            if (tile_sprites[i][j] != NULL){
+                if (map__is_visible(i, j)){
+                    tile_sprites[i][j]->blit(big_map);
                 }
             }
         }
@@ -373,24 +393,24 @@ void Map::blit_to_screen(){
     s->blit_screen(map_overlay, NULL, &visible_area);
 }
 
-void Map::handle_mouse_motion(int i, int j){
+void map__handle_mouse_motion(int i, int j){
     if (i < MAP_SIZE && i >= 0 && j < MAP_SIZE && j >= 0){
-        if (this->build_mode != NO_BUILDING){
+        if (build_mode != NO_BUILDING){
             // cas spéciaux
-            if (this->build_mode == EMPTY){
+            if (build_mode == EMPTY){
                 return;
             }
-            if (this->build_mode == FISH1){
+            if (build_mode == FISH1){
                 return;
             }
             // TODO case road
             map_overlay->clear(true);
             // taille du bâtiment
-            int size = tile_size(this->build_mode);
+            int size = tile_size(build_mode);
             // vérifier construction possible (toutes tuiles herbes)
             for(int n_i = i; n_i > i-size; n_i--){
                 for(int n_j = j; n_j > j-size; n_j--){
-                    if (this->tile_types[n_i][n_j] != GRASS){
+                    if (tile_types[n_i][n_j] != GRASS){
                         //cannot build here
                         return;
                     }
@@ -400,139 +420,136 @@ void Map::handle_mouse_motion(int i, int j){
             int x, y;
             for(int n_i = i-size+1; n_i <= i; n_i++){
                 for(int n_j = j-size+1; n_j <= j; n_j++){
-                    convertir(n_i, n_j, &x, &y);
-                    this->building_tile->move(x, y);
-                    this->building_tile->blit(map_overlay);
+                    map__convertir(n_i, n_j, &x, &y);
+                    building_tile->move(x, y);
+                    building_tile->blit(map_overlay);
                 }
             }
         }
     }
 }
 
-/******************************************************************************/
 /* méthode pour construire sur la map */
 
-void Map::set_build_mode(int mode) {
-    if (this->build_mode == EMPTY){
+void map__set_build_mode(int mode) {
+    if (build_mode == EMPTY){
         // si on était en mode clean, on remet la flèche
         system_set_cursor(CURSOR_ARROW);
     }
-    this->build_mode=mode;
-    this->map_overlay->clear(true);
+    build_mode=mode;
+    map_overlay->clear(true);
     if (mode == EMPTY){
         // si on passe en mode clean, on met la pelle
         system_set_cursor(CURSOR_SHOVEL);
     }
  }
 
-
-void Map::add_building(int i, int j){
+void map__add_building(int i, int j){
     // taille du batiment
-    int size = tile_size(this->build_mode);
+    int size = tile_size(build_mode);
     // vérifier construction possible
     for(int n_i = i; n_i > i-size; n_i--){
         for(int n_j = j; n_j > j-size; n_j--){
-            if (this->tile_types[n_i][n_j] != GRASS){
+            if (tile_types[n_i][n_j] != GRASS){
                 std::cout << "cannot build here\n";
                 return;
             }
         }
     }
     /* second step : clear the area */
-    Building *building = create_new_building(this->build_mode, i, j);
+    Building *building = create_new_building(build_mode, i, j);
     for(int n_i = i; n_i > i-size; n_i--){
         for(int n_j = j; n_j > j-size; n_j--){
-            this->tile_types[n_i][n_j] = EMPTY;
-            delete this->tile_sprites[n_i][n_j];
-            this->tile_sprites[n_i][n_j] = NULL;
-            this->building_links[n_i][n_j] = building;
+            tile_types[n_i][n_j] = EMPTY;
+            delete tile_sprites[n_i][n_j];
+            tile_sprites[n_i][n_j] = NULL;
+            building_links[n_i][n_j] = building;
         }
     }
     /* then : add the new sprite and fix its position */
-    this->tile_types[i][j] = building->type;
-    this->update_sprite(i, j);
+    tile_types[i][j] = building->type;
+    map__update_sprite(i, j);
     building->has_been_built();
 }
 
-void Map::clean(int i, int j){
-    if (this->tile_types[i][j] == TREE){
-        this->set_type(i, j, GRASS);
-        this->update_sprite(i, j);
+void map__clean(int i, int j){
+    if (tile_types[i][j] == TREE){
+        map__set_type(i, j, GRASS);
+        map__update_sprite(i, j);
     }
-    else if (this->building_links[i][j] != NULL){
-        Building * b = this->building_links[i][j];
+    else if (building_links[i][j] != NULL){
+        Building * b = building_links[i][j];
         int size = tile_size(b->type);
         for(int n_i = b->i; n_i > b->i-size; n_i--){
             for(int n_j = b->j; n_j > b->j-size; n_j--){
-                this->set_type(n_i, n_j, GRASS);
-                this->building_links[n_i][n_j] = NULL;
-                this->update_sprite(n_i, n_j);
+                map__set_type(n_i, n_j, GRASS);
+                building_links[n_i][n_j] = NULL;
+                map__update_sprite(n_i, n_j);
             }
         }
         remove_building(b);
     }
 }
 
-void Map::add_road(int i, int j){
-    if (this->tile_types[i][j] == GRASS){
-        this->set_type(i, j, ROAD);
-        this->update_sprite(i, j);
+void map__add_road(int i, int j){
+    if (tile_types[i][j] == GRASS){
+        map__set_type(i, j, ROAD);
+        map__update_sprite(i, j);
         int di[] = {0, -1, 0, 1};
         int dj[] = {-1, 0, 1, 0};
         for(int k = 0; k < 4; k++){
             if (i+di[k] < MAP_SIZE && i+di[k] >= 0 && j+dj[k] < MAP_SIZE && j+dj[k] >= 0){
-                if (this->tile_types[i+di[k]][j+dj[k]] == ROAD){
-                    this->update_sprite(i+di[k], j+dj[k]);
+                if (tile_types[i+di[k]][j+dj[k]] == ROAD){
+                    map__update_sprite(i+di[k], j+dj[k]);
                 }
             }
         }
     }
     else{ // TODO : gérer l'erreur
-        std::cout << "cannot build road here (no grass) " << this->tile_types[i][j] << std::endl;;
+        std::cout << "cannot build road here (no grass) " << tile_types[i][j] << std::endl;;
     }
 }
 
-void Map::add_fishery(int i, int j){
+void map__add_fishery(int i, int j){
     // TODO
 }
 
-void Map::add_warehouse(int i, int j){
+void map__add_warehouse(int i, int j){
     // TODO
 }
 
-
-void Map::handle_mouse_click(int i, int j){
+void map__handle_mouse_click(int i, int j){
     if (i < MAP_SIZE && i >= 0 && j < MAP_SIZE && j >= 0){
         map_overlay->clear(true);
-        switch (this->build_mode) {
+        switch (build_mode) {
             case NO_BUILDING:
                 return;
             case EMPTY:
                 // supprimer des arbres
-                this->clean(i, j);
+                map__clean(i, j);
                 break;
             case ROAD:
-                this->add_road(i, j);
+                map__add_road(i, j);
                 break;
             case FISH1:
                 // cas compliqué (position côte...)
-                this->add_fishery(i, j);
+                map__add_fishery(i, j);
                 break;
             case WAREHOUSE:
                 // cas compliqué
-                this->add_warehouse(i, j);
+                map__add_warehouse(i, j);
                 break;
             default:
                 // cas simple
-                this->add_building(i, j);
+                map__add_building(i, j);
                 break;
         }
     }
 }
 
-Building* Map::get_building_link(int i, int j){
+Building* map__get_building_link(int i, int j){
     if (i < MAP_SIZE && i >= 0 && j < MAP_SIZE && j >= 0){
-        return this->building_links[i][j];
+        return building_links[i][j];
     }
     return NULL;
 }

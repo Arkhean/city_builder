@@ -78,7 +78,7 @@ class Menu{
         void set_fps(float avgFPS);
         void update_position_indicator(int i, int j, int num_type);
         bool mouse_motion(int x, int y);
-        bool mouse_click(int x, int y, Map *m);
+        bool mouse_click(int x, int y);
         void set_menu_state(int state) { menu_state = state; }
 };
 

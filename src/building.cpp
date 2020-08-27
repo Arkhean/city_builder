@@ -44,7 +44,7 @@ Building::Building(int type, int i, int j)
 void Building::has_been_built(){
     // après la construction, il faut mettre à jour les routes
     int size = tile_size(this->type);
-    
+
 }
 
 Service_building::Service_building(int type, int i, int j, int range)

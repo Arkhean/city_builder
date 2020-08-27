@@ -166,7 +166,7 @@ bool Menu::mouse_motion(int x, int y){
 }
 
 // return if event was handled
-bool Menu::mouse_click(int x, int y, Map *m){
+bool Menu::mouse_click(int x, int y){
     bool event_handled = false;
     /* boutons de gauche */
     for(int i = 0; i < NB_BUTTONS; i++){
@@ -181,10 +181,10 @@ bool Menu::mouse_click(int x, int y, Map *m){
                     menu_state = i - 2; // correpond à l'enum de menu_states
                 }
                 // ouvrir un sous menu enlève le mode construction sur la carte
-                m->set_build_mode(NO_BUILDING);
+                map__set_build_mode(NO_BUILDING);
             }
             else {
-                m->set_build_mode(buttons[i]->value_on_click);
+                map__set_build_mode(buttons[i]->value_on_click);
                 menu_state = NONE;
             }
             event_handled = true;
@@ -198,7 +198,7 @@ bool Menu::mouse_click(int x, int y, Map *m){
         for(Button_text* b : sub_menu_entries[menu_state-1]){
             if (b->is_inside(x, y)){
                 event_handled = true;
-                m->set_build_mode(b->value_on_click);
+                map__set_build_mode(b->value_on_click);
                 menu_state = NONE;
             }
         }
