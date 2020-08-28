@@ -1,4 +1,6 @@
 #include "building.hpp"
+#include "map.hpp"
+#include "road.hpp"
 
 int tile_size(int type){
     switch (type) {
@@ -41,14 +43,24 @@ Building::Building(int type, int i, int j)
         : type(type), i(i), j(j), name(names[type-LAND_NUMBER]),
         maintenance_cost(maintenance_costs[type-LAND_NUMBER]) {}
 
-void Building::has_been_built(){
+void Service_building::has_been_built(){
     // après la construction, il faut mettre à jour les routes
     int size = tile_size(this->type);
-
+    int around = size * 4;
+    int di = this->i;
+    int dj = this->j+1;
+    while (around != 0){
+        around--;
+        if (map__is_road(di, dj)){
+            for(int service : this->services){
+                road__update_network(di, dj, service, 0);
+            }
+        }
+    }
 }
 
-Service_building::Service_building(int type, int i, int j, int range)
-        : Building(type, i, j), range(range) {}
+Service_building::Service_building(int type, int i, int j)
+        : Building(type, i, j) {}
 
 /******************************************************************************/
 // building management
@@ -56,7 +68,15 @@ Service_building::Service_building(int type, int i, int j, int range)
 std::vector<Building*> all_buildings;
 
 Building * create_new_building(int type, int i, int j){
-    Building * b = new Building(type, i, j);
+    Building *b = NULL;
+    switch (type) {
+        case MARKET:
+            b = new Service_building(type, i, j);
+            break;
+        default:
+            b = new Service_building(type, i, j);
+            break;
+    }
     all_buildings.push_back(b);
     return b;
 }

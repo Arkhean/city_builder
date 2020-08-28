@@ -4,6 +4,8 @@
 #include "screen.hpp"
 #include "sprite.hpp"
 
+#include <vector>
+
 enum services {
     MARKET_ACCESS,
     SCHOOL_ACCESS,
@@ -39,7 +41,8 @@ class Building {
         const std::string name;
         const int maintenance_cost;
         Building(int type, int i, int j);
-        void has_been_built();
+        virtual ~Building(){};
+        virtual void has_been_built()=0;
 };
 
 /* bâtiments pourvoyant un service au rue alentour */
@@ -47,9 +50,11 @@ class Building {
 // output: accès sur les rues
 class Service_building : public Building {
     private:
-        const int range;
+        std::vector<int> services;
     public:
-        Service_building(int type, int i, int j, int range);
+        Service_building(int type, int i, int j);
+        ~Service_building(){}
+        virtual void has_been_built();
 };
 
 /* bâtiments produisant des ressources */
@@ -63,6 +68,7 @@ class Production_building : public Building {
         int progress; // 0 - 100
     public:
         Production_building(int type, int i, int j, int input_resource, int output_resource);
+        ~Production_building(){}
 
 };
 
@@ -78,8 +84,6 @@ class House : public Building {
 
 /******************************************************************************/
 // building management
-
-#include <vector>
 
 Building * create_new_building(int type, int i, int j);
 void remove_building(Building *b);
